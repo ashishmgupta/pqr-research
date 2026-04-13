@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network Architecture — PQC Radar</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html">
+      <div class="radar-badge">PQC Radar</div>
+      <h1>Post-Quantum<br>Cryptography</h1>
+      <div class="tagline">Personal Notes · Verified on Real Infra</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-home">🏠 Home</a>
+    <div class="nav-section">This Page</div>
+    <a href="#tls-legs">TLS Termination Points</a>
+    <a href="#vendor-status">Vendor PQC Status</a>
+    <a href="#f5-config">F5 Configuration</a>
+    <a href="#openssl-setup">OpenSSL Setup</a>
+    <a href="#verify">Running the Test</a>
+    <div class="nav-section">Other Sections</div>
+    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
+    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
+    <a href="post-quantum.html">Post-Quantum Crypto</a>
+  </nav>
+</aside>
+
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Section 4 of 4</div>
+    <h1>Network Architecture &amp; Verification</h1>
+    <p class="subtitle">
+      My actual infrastructure has two TLS termination points and they have different ML-KEM stories.
+      This section covers the architecture, current vendor status, the openssl commands to verify
+      negotiation yourself, and everything I hit when I tried this on WSL for the first time.
+    </p>
+  </div>
+
+  <!-- ── TLS Termination Points ────────────────────────────────────── -->
+  <h3 id="tls-legs">Two TLS Legs — Not One</h3>
+  <p>
+    One thing I had to get straight early on: there is no single TLS tunnel from the user's browser
+    all the way to the backend server. TLS terminates and re-originates at each point in the path
+    that needs to inspect or route traffic. In my setup that means <strong>two separate TLS legs</strong>,
+    each with its own configuration and its own ML-KEM status. Getting one right does not automatically
+    fix the other.
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+      <defs>
+        <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#3fb950"/>
+        </marker>
+        <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
+        </marker>
+        <marker id="arr-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
+        </marker>
+        <marker id="arr-dim" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#6e7681"/>
+        </marker>
+      </defs>
+
+      <line x1="0" y1="110" x2="860" y2="110" stroke="#21262d" stroke-width="1" stroke-dasharray="4,6"/>
+
+      <!-- Browser -->
+      <rect x="10" y="70" width="100" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+      <circle cx="60" cy="92" r="10" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <path d="M40 130 Q60 112 80 130" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <text x="60" y="146" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
+      <text x="60" y="158" text-anchor="middle" font-size="9" fill="#8b949e">User Device</text>
+
+      <!-- TLS Leg 1 -->
+      <line x1="112" y1="110" x2="205" y2="110" stroke="#3fb950" stroke-width="2" marker-end="url(#arr-green)"/>
+      <rect x="118" y="75" width="84" height="28" rx="4" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
+      <text x="160" y="87" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">TLS LEG 1</text>
+      <text x="160" y="98" text-anchor="middle" font-size="8" fill="#7ee787">TLS 1.3 + ML-KEM</text>
+
+      <!-- Cloudflare -->
+      <rect x="207" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+      <ellipse cx="271" cy="88" rx="28" ry="14" fill="none" stroke="#f6821f" stroke-width="2"/>
+      <ellipse cx="255" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
+      <ellipse cx="287" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
+      <rect x="248" y="88" width="46" height="14" fill="#161b22"/>
+      <text x="271" y="112" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="700">Cloudflare</text>
+      <text x="271" y="124" text-anchor="middle" font-size="9" fill="#f6821f">WAF &amp; CDN</text>
+      <rect x="225" y="133" width="92" height="18" rx="9" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.4)" stroke-width="1"/>
+      <text x="271" y="145" text-anchor="middle" font-size="8" fill="#3fb950" font-weight="700">✓ ML-KEM DEFAULT</text>
+
+      <!-- Internet gap -->
+      <line x1="337" y1="110" x2="390" y2="110" stroke="#30363d" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-muted)"/>
+      <text x="364" y="100" text-anchor="middle" font-size="8" fill="#6e7681">Internet</text>
+
+      <!-- TLS Leg 2 -->
+      <line x1="393" y1="110" x2="486" y2="110" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr-blue)"/>
+      <rect x="399" y="75" width="84" height="28" rx="4" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
+      <text x="441" y="87" text-anchor="middle" font-size="9" fill="#58a6ff" font-weight="700">TLS LEG 2</text>
+      <text x="441" y="98" text-anchor="middle" font-size="8" fill="#a5c8ff">TLS 1.3 + ML-KEM</text>
+
+      <!-- F5 -->
+      <rect x="488" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+      <rect x="528" y="70" width="40" height="30" rx="4" fill="rgba(229,0,18,0.1)" stroke="#e50012" stroke-width="2"/>
+      <text x="548" y="90" text-anchor="middle" font-size="16" fill="#e50012" font-weight="900">F5</text>
+      <text x="552" y="114" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="700">F5 VIP</text>
+      <text x="552" y="126" text-anchor="middle" font-size="9" fill="#8b949e">BIG-IP LTM</text>
+      <rect x="506" y="133" width="104" height="18" rx="9" fill="rgba(210,153,34,0.1)" stroke="rgba(210,153,34,0.4)" stroke-width="1"/>
+      <text x="558" y="145" text-anchor="middle" font-size="8" fill="#d29922" font-weight="700">⚠ TMOS 17.5.1+ REQ</text>
+
+      <!-- Backend -->
+      <line x1="618" y1="110" x2="698" y2="110" stroke="#6e7681" stroke-width="1.5" marker-end="url(#arr-dim)"/>
+      <text x="658" y="100" text-anchor="middle" font-size="8" fill="#6e7681">HTTP/S</text>
+      <rect x="700" y="70" width="110" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+      <rect x="725" y="83" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <rect x="725" y="97" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <rect x="725" y="111" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <text x="755" y="134" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Backend</text>
+      <text x="755" y="146" text-anchor="middle" font-size="9" fill="#8b949e">App Servers</text>
+
+      <!-- Annotations -->
+      <rect x="112" y="175" width="223" height="72" rx="6" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
+      <text x="124" y="192" font-size="9" fill="#7ee787" font-weight="700">LEG 1 — Browser → Cloudflare</text>
+      <text x="124" y="207" font-size="8.5" fill="#8b949e">• ML-KEM on by default (TLS 1.3 zones)</text>
+      <text x="124" y="219" font-size="8.5" fill="#8b949e">• X25519MLKEM768 negotiated automatically</text>
+      <text x="124" y="231" font-size="8.5" fill="#8b949e">• Verify: pq.cloudflareresearch.com</text>
+      <text x="124" y="243" font-size="8.5" fill="#8b949e">• ~43% of CF traffic already PQ (Sept 2025)</text>
+
+      <rect x="393" y="175" width="223" height="72" rx="6" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
+      <text x="405" y="192" font-size="9" fill="#a5c8ff" font-weight="700">LEG 2 — Cloudflare → F5 VIP</text>
+      <text x="405" y="207" font-size="8.5" fill="#8b949e">• Requires TMOS 17.5.1+ (June 2025)</text>
+      <text x="405" y="219" font-size="8.5" fill="#8b949e">• Client SSL Profile: SecP256r1ML-KEM-768</text>
+      <text x="405" y="231" font-size="8.5" fill="#8b949e">• Set CF origin to "preferred" via API</text>
+      <text x="405" y="243" font-size="8.5" fill="#8b949e">• TLS 1.3 must be enabled (not 1.2)</text>
+
+      <line x1="223" y1="164" x2="223" y2="175" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="504" y1="164" x2="504" y2="175" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+
+  <!-- ── Vendor Status ─────────────────────────────────────────────── -->
+  <h3 id="vendor-status">Vendor PQC Status</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Component</th><th>TLS Leg</th><th>ML-KEM Status</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cloudflare</strong><br><span style="color:var(--text-dim);font-size:11px;">Browser → CF Edge</span></td>
+          <td>Leg 1</td>
+          <td><span class="badge badge-green">Default ON</span></td>
+          <td>X25519MLKEM768 enabled for all TLS 1.3 zones. No configuration needed.</td>
+        </tr>
+        <tr>
+          <td><strong>Cloudflare → Origin</strong><br><span style="color:var(--text-dim);font-size:11px;">CF Edge → F5</span></td>
+          <td>Leg 2 (CF side)</td>
+          <td><span class="badge badge-yellow">Configurable</span></td>
+          <td>Default: <code>supported</code> (adds HelloRetryRequest round-trip). Set to <code>preferred</code> via API for best performance.<br><code>PUT /zones/{id}/cache/origin_post_quantum_encryption</code></td>
+        </tr>
+        <tr>
+          <td><strong>F5 BIG-IP LTM</strong><br><span style="color:var(--text-dim);font-size:11px;">Client SSL Profile</span></td>
+          <td>Leg 2 (F5 side)</td>
+          <td><span class="badge badge-yellow">Requires 17.5.1+</span></td>
+          <td>TMOS 17.5.1 (June 2025) minimum. Cipher: <code>SecP256r1ML-KEM-768</code>. TLS 1.3 must be enabled.</td>
+        </tr>
+        <tr>
+          <td><strong>Netskope</strong><br><span style="color:var(--text-dim);font-size:11px;">Outbound proxy</span></td>
+          <td>Outbound</td>
+          <td><span class="badge badge-red">Not Yet Available</span></td>
+          <td>Proxy inspection legs (Phase 2 of their roadmap) not yet ML-KEM capable. Gap: outbound HTTPS inspection is not post-quantum protected.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── F5 Config ─────────────────────────────────────────────────── -->
+  <h3 id="f5-config">F5 BIG-IP — Configuration Reference</h3>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>GUI Path</h4>
+      <p style="font-size:12.5px;">
+        Local Traffic → Profiles → SSL → <strong>Client</strong><br>
+        → Configuration: Custom<br>
+        → Ciphers: add <code>SecP256r1ML-KEM-768</code><br>
+        → TLS 1.3: Enabled
+      </p>
+    </div>
+    <div class="card">
+      <h4>TMSH (Command Line)</h4>
+      <pre style="margin:0;font-size:11px;">tmsh modify ltm profile \
+  client-ssl &lt;name&gt; \
+  ciphers "DEFAULT:\
++SecP256r1ML-KEM-768" \
+  options { no-tlsv1 \
+  no-tlsv1-1 }</pre>
+    </div>
+  </div>
+
+  <!-- ── OpenSSL Setup ─────────────────────────────────────────────── -->
+  <h3 id="openssl-setup">Getting OpenSSL 3.5+ — What I Had to Do</h3>
+  <p>
+    I'll save you an hour of frustration. When I first tried to verify ML-KEM negotiation from the
+    command line, I hit an error that looked like a server problem but was entirely a client problem.
+    The <code>openssl s_client</code> command needs <strong>OpenSSL 3.5.0+</strong> to even know what
+    <code>X25519MLKEM768</code> is. Older versions refuse with a hard error — and depending on your
+    shell and OS, you might be running an older version than you think.
+  </p>
+
+  <div class="callout callout-red">
+    <strong>The error I hit — and what it actually means:</strong><br>
+    <code>Call to SSL_CONF_cmd(-groups, X25519MLKEM768:x25519) failed</code><br>
+    <code>error:0A080106 ... group 'X25519MLKEM768' cannot be set</code><br><br>
+    The server is fine. The <code>openssl</code> binary in your PATH is too old or it is the wrong one.
+  </div>
+
+  <h3 style="margin-top:8px;">Step 1 — Figure out which openssl you are actually calling</h3>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Check your binary and version</h4>
+      <pre style="margin:8px 0 0;">which openssl
+openssl version</pre>
+      <p style="margin-top:8px;">You need <strong>3.5.0 or later</strong>.</p>
+    </div>
+    <div class="card">
+      <h4>Check available PQ groups — use the right flag</h4>
+      <pre style="margin:8px 0 0;">openssl list -tls-groups | grep MLKEM</pre>
+      <p style="margin-top:8px;"><strong>Note:</strong> <code>openssl list -groups</code> returns
+      nothing in OpenSSL 3.5 — it is a different command. Always use <code>-tls-groups</code>.
+      I wasted time on this.</p>
+    </div>
+  </div>
+
+  <h3>Step 2 — Fix by platform</h3>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h4>🪟 Windows — Git Bash (MinGW64)</h4>
+    <p>
+      Good news: Git for Windows already ships with OpenSSL 3.5.x in MinGW64. The catch is you have
+      to run your commands in <strong>Git Bash</strong>, not PowerShell or CMD. In PowerShell, the
+      <code>openssl</code> command resolves to something older from <code>C:\Windows\System32</code>.
+      Same command, completely different binary.
+    </p>
+    <pre style="margin:10px 0 0;"><span class="comment"># Confirm you are in Git Bash with the right binary</span>
+which openssl   <span class="comment"># should show: /mingw64/bin/openssl</span>
+openssl list -tls-groups | grep MLKEM</pre>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h4>🐧 Ubuntu / WSL</h4>
+    <p>
+      Ubuntu ships OpenSSL 3.0.x — too old. You need to build 3.5.0 from source. The important
+      thing is the <code>-Wl,-rpath</code> flag. Without it, the binary builds fine but fails at
+      runtime because it picks up the system's old libraries instead of its own. I hit that exact
+      error and it is confusing until you know why.
+    </p>
+    <pre style="margin:10px 0 0;"><span class="comment"># Install build dependencies</span>
+sudo apt install -y build-essential wget
+
+<span class="comment"># Download OpenSSL 3.5.0 source</span>
+wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
+tar xzf openssl-3.5.0.tar.gz && cd openssl-3.5.0
+
+<span class="comment"># Configure with rpath — this is the important part</span>
+./Configure --prefix=/usr/local/openssl35 \
+            --openssldir=/usr/local/openssl35 \
+            -Wl,-rpath,/usr/local/openssl35/lib64
+
+make -j$(nproc) && sudo make install
+
+<span class="comment"># Verify</span>
+/usr/local/openssl35/bin/openssl version</pre>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h4>🔧 Already built without rpath? Use LD_LIBRARY_PATH</h4>
+    <pre style="margin:8px 0 0;"><span class="comment"># Add a shell function to ~/.bashrc</span>
+cat >> ~/.bashrc &lt;&lt; 'EOF'
+openssl35() {
+  LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
+    /usr/local/openssl35/bin/openssl "$@"
+}
+EOF
+source ~/.bashrc
+
+openssl35 version   <span class="comment"># should show OpenSSL 3.5.0</span></pre>
+  </div>
+
+  <!-- ── Running the Test ──────────────────────────────────────────── -->
+  <h3 id="verify">Running the Verification</h3>
+  <p>
+    Once you have a working OpenSSL 3.5+ binary, the command is the same everywhere.
+    The line to look for in the output is <code>Negotiated TLS1.3 group: X25519MLKEM768</code>.
+  </p>
+
+  <pre>openssl s_client \
+  -connect your-hostname:443 \
+  -tls1_3 \
+  -groups "X25519MLKEM768:x25519" \
+  -CAfile /etc/ssl/certs/ca-certificates.crt \
+  -brief</pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Output Line</th><th>What it Means</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Negotiated TLS1.3 group: X25519MLKEM768</code></td>
+          <td><span class="badge badge-green">ML-KEM negotiated</span> — post-quantum key exchange is active</td>
+        </tr>
+        <tr>
+          <td><code>Negotiated TLS1.3 group: x25519</code></td>
+          <td><span class="badge badge-yellow">Classical only</span> — server does not support ML-KEM or it is not configured</td>
+        </tr>
+        <tr>
+          <td><code>Verification error: unable to get local issuer certificate</code></td>
+          <td><span class="badge badge-blue">Harmless</span> — custom OpenSSL build lacks CA bundle. Add <code>-CAfile /etc/ssl/certs/ca-certificates.crt</code></td>
+        </tr>
+        <tr>
+          <td><code>group 'X25519MLKEM768' cannot be set</code></td>
+          <td><span class="badge badge-red">Wrong binary</span> — you are calling OpenSSL older than 3.5.0. See Step 1 above</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>What I got on loginv2.lpl.com through Cloudflare (April 2026):</strong><br>
+    <code>Protocol version: TLSv1.3</code><br>
+    <code>Ciphersuite: TLS_AES_256_GCM_SHA384</code><br>
+    <code>Negotiated TLS1.3 group: X25519MLKEM768</code><br><br>
+    Through F5 Distributed Cloud on the same domain, the negotiated group was <code>x25519</code> —
+    TLS 1.3, but classical only. Same domain, same protocol version, different algorithm in the
+    key_share slot. That is the entire quantum gap.
+  </div>
+
+  <div class="page-nav">
+    <a href="post-quantum.html">
+      <span class="nav-label">← Previous</span>
+      <span class="nav-title">Post-Quantum Cryptography</span>
+    </a>
+    <a href="index.html" class="next">
+      <span class="nav-label">↑ Back to</span>
+      <span class="nav-title">Home</span>
+    </a>
+  </div>
+
+  <footer>
+    <p>
+      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Sources:
+      <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
+      <a href="https://community.f5.com/kb/technicalarticles/future-proofing-your-network-enabling-quantum-ciphers-on-f5-big-ip-tmos-17-5-1/342586" target="_blank">F5 DevCentral KB 342586</a> ·
+      <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a>
+    </p>
+  </footer>
+</main>
+
+<script>
+  const sections = document.querySelectorAll('h3[id]');
+  const navLinks = document.querySelectorAll('.sidebar a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + entry.target.id) link.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

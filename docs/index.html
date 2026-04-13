@@ -3,535 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PQC Radar — Post-Quantum Cryptography Reference</title>
+  <title>PQC Radar — Post-Quantum Cryptography</title>
+  <link rel="stylesheet" href="static/style.css" />
   <style>
-    /* ── Reset & base ──────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:           #0d1117;
-      --surface:      #161b22;
-      --surface-2:    #1c2128;
-      --border:       #30363d;
-      --border-light: #21262d;
-      --text:         #e6edf3;
-      --text-muted:   #8b949e;
-      --text-dim:     #6e7681;
-      --blue:         #58a6ff;
-      --green:        #3fb950;
-      --red:          #f85149;
-      --yellow:       #d29922;
-      --purple:       #bc8cff;
-      --orange:       #f0883e;
-      --teal:         #39d353;
-      --sidebar-w:    240px;
-      --radius:       8px;
-      --font-mono:    'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      font-size: 15px;
-      line-height: 1.7;
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* ── Sidebar ───────────────────────────────────────────────────── */
-    .sidebar {
-      width: var(--sidebar-w);
-      min-height: 100vh;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      position: fixed;
-      top: 0; left: 0;
-      overflow-y: auto;
-      z-index: 100;
-      padding: 0 0 40px;
-    }
-
-    .sidebar-logo {
-      padding: 24px 20px 20px;
+    /* Landing page extras */
+    .hero {
+      padding: 48px 0 40px;
       border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
     }
-    .sidebar-logo h1 {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: 0.02em;
+    .hero .eyebrow {
+      font-size: 12px; color: var(--blue); font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;
     }
-    .sidebar-logo .tagline {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 3px;
+    .hero h1 {
+      font-size: 34px; font-weight: 700; line-height: 1.2;
+      margin-bottom: 20px; color: var(--text);
     }
-    .radar-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 2px 7px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      text-transform: uppercase;
+    .hero p { font-size: 15.5px; max-width: 640px; margin-bottom: 14px; }
+
+    .section-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 48px; }
+
+    .section-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px 26px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .section-card:hover { border-color: var(--blue); background: rgba(88,166,255,0.04); }
+    .section-card .card-eyebrow {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-dim);
+    }
+    .section-card .card-icon { font-size: 24px; }
+    .section-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
+    .section-card p { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.6; }
+    .section-card .card-link {
+      font-size: 12px; font-weight: 600; color: var(--blue);
+      margin-top: auto; padding-top: 8px;
     }
 
-    .sidebar nav { padding: 12px 0; }
-    .nav-section {
-      padding: 16px 20px 4px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
+    .verified-box {
+      background: var(--surface); border: 1px solid rgba(63,185,80,0.3);
+      border-radius: 10px; padding: 24px 28px; margin-bottom: 48px;
     }
-    .sidebar a {
-      display: block;
-      padding: 6px 20px 6px 28px;
-      font-size: 13px;
-      color: var(--text-muted);
-      text-decoration: none;
-      border-left: 2px solid transparent;
-      transition: all 0.15s;
-      line-height: 1.4;
-    }
-    .sidebar a:hover { color: var(--text); background: var(--surface-2); }
-    .sidebar a.active { color: var(--blue); border-left-color: var(--blue); background: rgba(88,166,255,0.06); }
+    .verified-box h3 { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 12px; }
+    .verified-box p { font-size: 13px; margin-bottom: 10px; }
+    .verified-box p:last-child { margin-bottom: 0; }
+    .verified-box pre { margin: 10px 0 0; font-size: 12px; }
 
-    /* ── Main content ──────────────────────────────────────────────── */
-    main {
-      margin-left: var(--sidebar-w);
-      flex: 1;
-      max-width: 960px;
-      padding: 48px 48px 80px;
-    }
-
-    /* ── Page header ───────────────────────────────────────────────── */
-    .page-header {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 32px;
-      margin-bottom: 56px;
-    }
-    .page-header .eyebrow {
-      font-size: 12px;
-      color: var(--blue);
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .page-header h1 {
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 14px;
-      background: linear-gradient(135deg, var(--text) 0%, var(--blue) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .page-header .subtitle {
-      color: var(--text-muted);
-      font-size: 16px;
-      max-width: 620px;
-    }
-    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
-    .pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-      border: 1px solid;
-    }
-    .pill-blue  { color: var(--blue);   border-color: rgba(88,166,255,0.4);  background: rgba(88,166,255,0.08); }
-    .pill-green { color: var(--green);  border-color: rgba(63,185,80,0.4);   background: rgba(63,185,80,0.08); }
-    .pill-red   { color: var(--red);    border-color: rgba(248,81,73,0.4);   background: rgba(248,81,73,0.08); }
-    .pill-yellow{ color: var(--yellow); border-color: rgba(210,153,34,0.4);  background: rgba(210,153,34,0.08); }
-    .pill-purple{ color: var(--purple); border-color: rgba(188,140,255,0.4); background: rgba(188,140,255,0.08); }
-
-    /* ── Sections ──────────────────────────────────────────────────── */
-    section { margin-bottom: 80px; }
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .section-icon {
-      width: 36px; height: 36px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-    .icon-blue   { background: rgba(88,166,255,0.12); }
-    .icon-green  { background: rgba(63,185,80,0.12); }
-    .icon-purple { background: rgba(188,140,255,0.12); }
-
-    .section-header h2 {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .section-header .section-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 1px;
-    }
-
-    h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-      margin: 32px 0 12px;
-    }
-    h3:first-child { margin-top: 0; }
-
-    p { color: var(--text-muted); margin-bottom: 14px; }
-    strong { color: var(--text); font-weight: 600; }
-
-    /* ── Cards ─────────────────────────────────────────────────────── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 16px;
-    }
-    .card-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .card-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .card h4 {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .card p { font-size: 13px; margin-bottom: 0; }
-
-    .callout {
-      border-left: 3px solid;
-      padding: 14px 18px;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      margin: 20px 0;
-      font-size: 13.5px;
-    }
-    .callout-red    { border-color: var(--red);    background: rgba(248,81,73,0.08);  color: #ffa8a3; }
-    .callout-green  { border-color: var(--green);  background: rgba(63,185,80,0.08);  color: #7ee787; }
-    .callout-yellow { border-color: var(--yellow); background: rgba(210,153,34,0.08); color: #e3b341; }
-    .callout-blue   { border-color: var(--blue);   background: rgba(88,166,255,0.08); color: #a5c8ff; }
-
-    .callout strong { color: inherit; }
-
-    /* ── Code ──────────────────────────────────────────────────────── */
-    code {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1px 5px;
-      color: var(--orange);
-    }
-    pre {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      overflow-x: auto;
-      color: #a5c8ff;
-      line-height: 1.6;
-      margin: 16px 0;
-    }
-    pre .comment { color: var(--text-dim); }
-    pre .highlight { color: var(--green); }
-    pre .key { color: var(--orange); }
-
-    /* ── Status badges ─────────────────────────────────────────────── */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-    .badge::before { content: '●'; font-size: 8px; }
-    .badge-green  { background: rgba(63,185,80,0.15);  color: var(--green); }
-    .badge-red    { background: rgba(248,81,73,0.15);  color: var(--red); }
-    .badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
-    .badge-blue   { background: rgba(88,166,255,0.15); color: var(--blue); }
-
-    /* ── Tables ────────────────────────────────────────────────────── */
-    .table-wrap { overflow-x: auto; margin: 16px 0; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    th {
-      background: var(--surface-2);
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 10px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border-light);
-      color: var(--text-muted);
-      vertical-align: top;
-    }
-    tr:last-child td { border-bottom: none; }
-    td strong { color: var(--text); }
-
-    /* ── TLS Sequence Diagram ──────────────────────────────────────── */
-    .sequence-diagram {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      margin: 20px 0;
-      overflow-x: auto;
-    }
-    .seq-header {
-      display: grid;
-      grid-template-columns: 1fr 80px 1fr;
-      gap: 0;
-      margin-bottom: 20px;
-    }
-    .seq-actor {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      text-align: center;
-      padding: 10px 16px;
-    }
-    .seq-actor .actor-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .seq-actor .actor-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .seq-spacer { /* center gap */ }
-
-    .seq-step {
-      display: grid;
-      grid-template-columns: 1fr 80px 1fr;
-      align-items: center;
-      margin-bottom: 6px;
-      min-height: 44px;
-    }
-    .seq-left  { text-align: right; padding-right: 12px; }
-    .seq-right { text-align: left;  padding-left: 12px; }
-    .seq-mid   { text-align: center; position: relative; }
-
-    .seq-msg {
-      font-size: 12px;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .seq-detail {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-      font-family: var(--font-mono);
-    }
-    .seq-number {
-      display: inline-flex;
-      width: 22px; height: 22px;
-      background: var(--blue);
-      color: #fff;
-      border-radius: 50%;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .seq-arrow-right {
-      position: relative;
-    }
-    .seq-arrow-right::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 0; right: 0;
-      height: 1px;
-      background: var(--border);
-    }
-    .seq-line {
-      border-left: 2px dashed var(--border);
-      min-height: 30px;
-    }
-    .seq-warn .seq-msg { color: var(--red); }
-    .seq-warn .seq-number { background: var(--red); }
-    .seq-ok .seq-msg { color: var(--green); }
-    .seq-ok .seq-number { background: var(--green); }
-
-    /* ── Network Diagram (SVG) ─────────────────────────────────────── */
-    .diagram-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      margin: 20px 0;
-      overflow-x: auto;
-    }
-    .diagram-wrap svg {
-      display: block;
-      max-width: 100%;
-    }
-
-    /* ── Step list ─────────────────────────────────────────────────── */
-    .step-list { margin: 12px 0 20px; }
-    .step {
-      display: flex;
-      gap: 14px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border-light);
-    }
-    .step:last-child { border-bottom: none; }
-    .step-num {
-      width: 26px; height: 26px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700;
-      color: var(--text-muted);
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .step-content { flex: 1; }
-    .step-title { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-    .step-body  { font-size: 12.5px; color: var(--text-muted); }
-
-    /* ── Algo card grid ────────────────────────────────────────────── */
-    .algo-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-    }
-    .algo-card .algo-tag {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-bottom: 6px;
-    }
-    .algo-card h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-    .algo-card .fips {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--blue);
-      margin-bottom: 8px;
-    }
-    .algo-card p { font-size: 12.5px; margin-bottom: 0; }
-
-    /* ── Footer ────────────────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 0 0;
-      margin-top: 40px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-    footer a { color: var(--blue); text-decoration: none; }
-
-    /* ── Responsive ────────────────────────────────────────────────── */
     @media (max-width: 800px) {
-      .sidebar { display: none; }
-      main { margin-left: 0; padding: 24px; }
-      .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+      .section-cards { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 26px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════════════════
-     SIDEBAR
-════════════════════════════════════════════════════════════════════ -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <div class="radar-badge">PQC Radar</div>
-    <h1>Post-Quantum<br>Cryptography</h1>
-    <div class="tagline">Personal Notes · Verified on Real Infra</div>
+    <a href="index.html">
+      <div class="radar-badge">PQC Radar</div>
+      <h1>Post-Quantum<br>Cryptography</h1>
+      <div class="tagline">Personal Notes · Verified on Real Infra</div>
+    </a>
   </div>
   <nav>
-    <div class="nav-section">Fundamentals</div>
-    <a href="#pre-quantum">Pre-Quantum Crypto</a>
-    <a href="#tls-handshake">— TLS Handshake Today</a>
-    <a href="#rsa-math">— RSA: Factoring Problem</a>
-    <a href="#quantum-threat">— The Quantum Threat</a>
-    <a href="#hndl">— Harvest Now, Decrypt Later</a>
-
-    <div class="nav-section">Post-Quantum</div>
-    <a href="#post-quantum">Post-Quantum Crypto</a>
-    <a href="#why-lattice">— Why Lattice Problems</a>
-    <a href="#nist-standards">— NIST Standards</a>
-    <a href="#mlkem-tls">— ML-KEM in TLS 1.3</a>
-    <a href="#hybrid">— Hybrid Mode</a>
-
-    <div class="nav-section">Architecture</div>
-    <a href="#network">Network Diagram</a>
-    <a href="#tls-legs">— TLS Termination Points</a>
-    <a href="#vendor-status">— Vendor PQC Status</a>
-
-    <div class="nav-section">Troubleshooting</div>
-    <a href="#openssl-setup">OpenSSL Setup</a>
-    <a href="#openssl-setup">— Windows Git Bash</a>
-    <a href="#openssl-setup">— Ubuntu / WSL</a>
+    <div class="nav-section">Sections</div>
+    <a href="index.html" class="active nav-home">🏠 Home</a>
+    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
+    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
+    <a href="post-quantum.html">Post-Quantum Crypto</a>
+    <a href="network.html">Network Architecture</a>
   </nav>
 </aside>
 
-<!-- ════════════════════════════════════════════════════════════════════
-     MAIN
-════════════════════════════════════════════════════════════════════ -->
 <main>
-
-  <!-- Page Header -->
-  <header class="page-header">
-    <div class="eyebrow">PQC Radar · Personal Notes &amp; Verified Research</div>
-    <h1>Post-Quantum Cryptography —<br>What I Learned So Far</h1>
-    <p class="subtitle">
-      I'm a network security engineer, not a mathematician. When the topic of post-quantum cryptography
-      started showing up in vendor roadmaps and compliance conversations, I decided to actually understand
-      it — not just nod along. This is what I found out, verified against real infrastructure,
-      and written the way I wish someone had explained it to me.
+  <div class="hero">
+    <div class="eyebrow">PQC Radar · by Ashish Gupta</div>
+    <h1>Post-quantum cryptography<br>for people who run networks</h1>
+    <p>
+      Post-quantum cryptography started showing up in vendor roadmaps and compliance conversations,
+      and I realised I was nodding along without really understanding it. So I decided to learn it
+      properly — not just the what, but the why and how it works on infrastructure I actually manage.
+    </p>
+    <p>
+      This site documents what I found. Everything here has been tested and verified against real
+      infrastructure — Cloudflare, F5 BIG-IP, and a domain I can run <code>openssl s_client</code>
+      against. It's not the only way to understand this topic, but it's the one that worked for me.
     </p>
     <div class="pill-row">
       <span class="pill pill-green">NIST FIPS 203 · ML-KEM</span>
@@ -541,926 +101,95 @@
       <span class="pill pill-yellow">Harvest Now, Decrypt Later</span>
       <span class="pill pill-purple">X25519MLKEM768</span>
     </div>
-  </header>
+  </div>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       SECTION 1 — PRE-QUANTUM
-  ══════════════════════════════════════════════════════════════════ -->
-  <section id="pre-quantum">
-    <div class="section-header">
-      <div class="section-icon icon-blue">🔐</div>
-      <div>
-        <h2>Fundamentals — Pre-Quantum Cryptography</h2>
-        <div class="section-sub">I had to understand what we're replacing before I could understand why we're replacing it</div>
-      </div>
-    </div>
+  <!-- Section Cards -->
+  <div class="section-cards">
 
-    <!-- TLS Handshake -->
-    <h3 id="tls-handshake">How a TLS Handshake Works Today</h3>
-    <p>
-      Before I could understand what post-quantum cryptography changes, I needed to be really clear on what
-      actually happens during a TLS handshake. I thought I knew — turns out I had a few gaps.
-      The key thing that clicked for me: the handshake is solving <em>two completely separate problems</em> at once.
-      First, <strong>key exchange</strong> — how do two strangers on the internet agree on a shared secret
-      without anyone intercepting it? And second, <strong>data encryption</strong> — once they have that secret,
-      how do they use it to protect everything they say to each other?
-      Post-quantum cryptography only touches the first one. I'll come back to why that matters.
-    </p>
-
-    <div class="sequence-diagram">
-      <!-- Actors -->
-      <div class="seq-header">
-        <div class="seq-actor">
-          <div class="actor-name">🌐 Browser / Client</div>
-          <div class="actor-desc">Chrome, Firefox, Edge…</div>
-        </div>
-        <div class="seq-spacer"></div>
-        <div class="seq-actor">
-          <div class="actor-name">🖥️ Web Server</div>
-          <div class="actor-desc">Cloudflare · F5 · Origin</div>
-        </div>
-      </div>
-
-      <!-- Steps -->
-      <div class="step-list">
-
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-content">
-            <div class="step-title">TCP Handshake <span style="color:var(--text-dim);font-weight:400;font-size:12px">— before TLS starts</span></div>
-            <div class="step-body">SYN → SYN-ACK → ACK. A reliable transport connection is established. No encryption yet.</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-content">
-            <div class="step-title">Client Hello <span style="color:var(--blue);font-size:12px">→ Server</span></div>
-            <div class="step-body">
-              Browser sends: supported TLS versions, list of cipher suites it supports
-              (e.g. <code>TLS_AES_256_GCM_SHA384</code>), and its supported key agreement groups
-              (e.g. <code>x25519</code>, <code>P-256</code>). In TLS 1.3 it also sends a speculative
-              key share to avoid a round-trip.
-            </div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-content">
-            <div class="step-title">Server Hello + Certificate <span style="color:var(--blue);font-size:12px">← Server</span></div>
-            <div class="step-body">
-              Server picks a cipher suite, responds with its <strong>public key certificate</strong>
-              (RSA or ECDSA signed by a trusted CA). The certificate proves the server's identity.
-              The certificate's public key will be used in the key exchange next.
-            </div>
-          </div>
-        </div>
-
-        <div class="step" style="background:rgba(248,81,73,0.04);border-radius:6px;padding:10px 10px 10px 0;margin-bottom:4px;">
-          <div class="step-num" style="background:rgba(248,81,73,0.15);color:var(--red);border-color:rgba(248,81,73,0.3);">4</div>
-          <div class="step-content">
-            <div class="step-title" style="color:var(--red);">Key Exchange — ⚠️ Quantum-Vulnerable Step</div>
-            <div class="step-body">
-              <strong style="color:var(--text);">RSA mode:</strong> Browser generates a random pre-master secret,
-              encrypts it with the server's public key, and sends the ciphertext. Only the server can decrypt it
-              with its private key.<br><br>
-              <strong style="color:var(--text);">ECDH mode</strong> (~70–80% of modern traffic):
-              Both sides contribute key material via Diffie-Hellman math. The shared secret is
-              <em>computed</em>, never transmitted. Either way — Shor's Algorithm on a quantum computer
-              breaks both methods by recovering the server's private key.
-            </div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-content">
-            <div class="step-title">Derive Session Keys</div>
-            <div class="step-body">
-              Both sides now hold the same shared secret. They independently run it through a key
-              derivation function (HKDF) to produce symmetric encryption keys. No key material
-              crosses the network in this step.
-            </div>
-          </div>
-        </div>
-
-        <div class="step" style="background:rgba(63,185,80,0.04);border-radius:6px;padding:10px 10px 10px 0;">
-          <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--green);border-color:rgba(63,185,80,0.3);">6</div>
-          <div class="step-content">
-            <div class="step-title" style="color:var(--green);">AES-256-GCM — ✅ Quantum-Safe</div>
-            <div class="step-body">
-              All HTTP traffic (GET requests, HTML, login forms, API calls) is now encrypted with
-              AES-256 using the derived session key. Both sides use the <em>same</em> symmetric key
-              (that's what makes it fast). AES-256 is <strong>not vulnerable to quantum computers</strong>
-              — Grover's algorithm only halves the effective key length (256 → 128 bits, still secure).
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="callout callout-yellow">
-      <strong>The thing that surprised me:</strong> Step 4 and Step 6 are completely separate problems — and quantum computers only break Step 4.
-      Your actual data, sitting in Step 6, is encrypted with AES-256 and that's fine.
-      Post-quantum cryptography replaces Step 4 only. The rest of TLS is untouched.
-      I found this reassuring — it's a targeted fix, not a rebuild from scratch.
-    </div>
-
-    <!-- RSA Math -->
-    <h3 id="rsa-math">RSA: Security by Factoring Difficulty</h3>
-    <p>
-      Here's the bit that actually made RSA click for me. The security isn't magic — it's just a
-      maths problem that's easy in one direction and brutally hard in reverse.
-      Pick two large prime numbers, multiply them together, and you get <strong>n</strong>.
-      That's fast. Trivially fast. But if I hand you <strong>n</strong> and ask you to find the two primes
-      I started with? That's the problem that's kept RSA secure for decades.
-      The table below shows just how quickly that difficulty scales up.
-    </p>
-
-    <div class="card-grid">
-      <div class="card">
-        <h4>🔑 RSA Key Generation</h4>
-        <p>
-          Pick two large primes <strong>p</strong> and <strong>q</strong>.<br>
-          Compute <strong>n = p × q</strong> — this is the public modulus.<br>
-          Publish <strong>n</strong> as part of the public key.<br>
-          Keep <strong>p</strong> and <strong>q</strong> secret.
-        </p>
-      </div>
-      <div class="card">
-        <h4>📐 Real RSA Scale</h4>
-        <p>
-          RSA-2048: <strong>617 decimal digits</strong> in n.<br>
-          RSA-4096: <strong>1,234 decimal digits</strong>.<br>
-          p and q are each ~300–600 digits.<br>
-          Classical computers: <strong>millions of years to factor</strong>.
-        </p>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Number Size</th>
-            <th>Example</th>
-            <th>Classical Time to Factor</th>
-            <th>Quantum (Shor's)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>4 digits</strong></td><td>n = 3,599 (59 × 61)</td><td>Milliseconds</td><td>—</td></tr>
-          <tr><td><strong>10 digits</strong></td><td>n = 6,700,417 × …</td><td>Under a second</td><td>—</td></tr>
-          <tr><td><strong>20 digits</strong></td><td>~10²⁰</td><td>Seconds</td><td>—</td></tr>
-          <tr><td><strong>30 digits</strong></td><td>~10³⁰</td><td>Minutes to hours</td><td>—</td></tr>
-          <tr><td><strong>60+ digits</strong></td><td>~10⁶⁰</td><td>Years</td><td>—</td></tr>
-          <tr>
-            <td><strong>617 digits (RSA-2048)</strong></td>
-            <td>Real key size</td>
-            <td><span class="badge badge-green">Millions of years</span></td>
-            <td><span class="badge badge-red">Hours to days</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Quantum Threat -->
-    <h3 id="quantum-threat">The Quantum Threat: Shor's Algorithm</h3>
-    <p>
-      So if factoring large numbers is the problem, what does a quantum computer actually do differently?
-      In 1994, a mathematician named Peter Shor figured out that quantum computers could solve
-      this factoring problem <strong>exponentially faster</strong> than anything classical — not by
-      trying harder, but by exploiting three properties of quantum mechanics that have no equivalent
-      in traditional computing. I'm not a physicist, but here's how I think about each one.
-    </p>
-
-    <div class="card-grid-3">
-      <div class="card">
-        <h4>🔵 Superposition</h4>
-        <p>A qubit exists as 0 <em>and</em> 1 simultaneously until measured. Shor's algorithm evaluates
-        a function at <em>all</em> possible inputs at once, rather than one at a time.</p>
-      </div>
-      <div class="card">
-        <h4>🔗 Entanglement</h4>
-        <p>Qubits become linked — measuring one instantly determines entangled partners.
-        Shor's algorithm uses this to correlate results across the superposition.</p>
-      </div>
-      <div class="card">
-        <h4>〰️ Interference</h4>
-        <p>Quantum algorithms amplify correct answers (constructive interference) and cancel wrong
-        ones (destructive interference). The period — and thus the factors — emerges from this process.</p>
-      </div>
-    </div>
-
-    <div class="callout callout-blue">
-      <strong>What actually breaks and what doesn't:</strong> RSA and ECDH both rely on mathematical
-      problems that Shor's algorithm dismantles on a quantum computer — integer factorization and discrete
-      logarithm respectively. AES-256 is a different story. It doesn't rely on either of those problems,
-      and the best quantum attack against it (Grover's algorithm) only halves the effective key length.
-      256 bits becomes 128 bits — still fine. So your encrypted data isn't the concern. The key exchange is.
-    </div>
-
-    <div class="card" style="border-color:rgba(248,81,73,0.3);">
-      <h4 style="color:var(--red);">⚠️ Where we actually are in 2025</h4>
+    <a href="pre-quantum.html" class="section-card">
+      <div class="card-eyebrow">Start here</div>
+      <div class="card-icon">🔐</div>
+      <h3>Pre-Quantum Cryptography</h3>
       <p>
-        The largest number ever factored using Shor's Algorithm on real quantum hardware is <strong>~21</strong>.
-        To break RSA-2048, you'd need roughly <strong>4,000 logical qubits</strong> — which translates to
-        millions of physical qubits once you account for error correction. We're not there yet, and
-        most estimates put that 15–20+ years away.<br><br>
-        So why are we talking about this now? Read on.
+        Before I could understand what post-quantum cryptography replaces, I needed to be clear
+        on what actually happens in a TLS handshake today. How RSA works, why it's vulnerable,
+        and the attack that doesn't need a quantum computer to start.
       </p>
-    </div>
+      <div class="card-link">Read → Pre-Quantum Fundamentals</div>
+    </a>
 
-    <!-- HNDL -->
-    <h3 id="hndl">Harvest Now, Decrypt Later (HNDL)</h3>
-    <p>
-      This is the part that shifted my thinking from "interesting future problem" to "we should be doing
-      something about this now." You don't need a quantum computer to start the attack. You just need storage
-      and patience — and nation-state actors have both in abundance.
-      The idea is straightforward and genuinely unsettling.
-    </p>
-
-    <div class="step-list">
-      <div class="step">
-        <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">1</div>
-        <div class="step-content">
-          <div class="step-title">Capture</div>
-          <div class="step-body">Adversary archives encrypted TLS sessions from internet taps, ISP access, or BGP hijacking. This is happening today.</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">2</div>
-        <div class="step-content">
-          <div class="step-title">Store</div>
-          <div class="step-body">Ciphertext is stored. It contains the RSA/ECDH key exchange, which is all they need to later derive the session key.</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">3</div>
-        <div class="step-content">
-          <div class="step-title">Wait</div>
-          <div class="step-body">Adversary waits until a cryptographically capable quantum computer exists (estimated 2035–2040+).</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">4</div>
-        <div class="step-content">
-          <div class="step-title">Decrypt</div>
-          <div class="step-body">Run Shor's Algorithm. Recover the session key. Decrypt the archived HTTPS traffic — login sessions, documents, financial data — retroactively.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout callout-red">
-      <strong>Ask yourself: what data are you protecting today that still needs to be secret in 2040?</strong>
-      Health records. M&amp;A conversations. Government communications. Trade secrets.
-      If the answer is anything, the migration clock is already running — because the capture
-      is already happening. The timeline to migrate to post-quantum is measured in years, not weeks.
-    </div>
-
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       SECTION 2 — POST-QUANTUM
-  ══════════════════════════════════════════════════════════════════ -->
-  <section id="post-quantum">
-    <div class="section-header">
-      <div class="section-icon icon-green">🛡️</div>
-      <div>
-        <h2>Fundamentals — Post-Quantum Cryptography</h2>
-        <div class="section-sub">What replaces RSA, why it works, and how it slots into the TLS handshake you already know</div>
-      </div>
-    </div>
-
-    <!-- Lattice problems -->
-    <h3 id="why-lattice">Why Lattice Problems Resist Quantum Computers</h3>
-    <p>
-      My first question when I started looking at this was: if RSA and ECDH are broken, what replaces them,
-      and why is the replacement any better? The answer is that post-quantum algorithms are built on
-      completely different mathematical problems — ones that Shor's Algorithm simply doesn't apply to.
-      The leading approach is <strong>lattice-based cryptography</strong>, and the intuition behind it
-      is actually easier to grasp than I expected.
-    </p>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h4>🔷 What is a Lattice? (The honest non-mathematician explanation)</h4>
+    <a href="tls-versions.html" class="section-card">
+      <div class="card-eyebrow">The bridge</div>
+      <div class="card-icon">🔄</div>
+      <h3>TLS 1.2 vs TLS 1.3</h3>
       <p>
-        Picture a regular grid of dots — like graph paper. Now imagine that same grid but in 1,000 dimensions
-        instead of 2. That's a lattice. The hard problem is this: given that grid, find the shortest
-        path between two points. In 2D that's trivial. In 1,000 dimensions it becomes genuinely computationally
-        intractable — and crucially, nobody has found a quantum shortcut for it the way Shor found one
-        for factoring. That's the mathematical foundation ML-KEM is built on.
+        The version of TLS matters more than I initially thought. TLS 1.3 wasn't just a performance
+        improvement — the architectural change it made to the key exchange is the exact reason
+        ML-KEM can exist at all. TLS 1.2 simply has no room for it.
       </p>
-    </div>
+      <div class="card-link">Read → TLS Version Comparison</div>
+    </a>
 
-    <div class="card-grid">
-      <div class="card">
-        <h4>RSA / ECDH (Classical)</h4>
-        <p>
-          Security based on <strong>integer factorization</strong> and
-          <strong>discrete logarithm</strong>.<br><br>
-          Quantum speedup: Shor's algorithm solves these in polynomial time.<br>
-          Result: <span class="badge badge-red">Broken by quantum</span>
-        </p>
-      </div>
-      <div class="card">
-        <h4>ML-KEM (Post-Quantum)</h4>
-        <p>
-          Security based on <strong>Module Learning With Errors (MLWE)</strong>
-          — a lattice problem.<br><br>
-          Quantum speedup: none known. Best quantum attack gives minimal advantage.<br>
-          Result: <span class="badge badge-green">Quantum-resistant</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- NIST Standards -->
-    <h3 id="nist-standards">NIST Post-Quantum Standards (2024)</h3>
-    <p>
-      NIST ran an open competition from 2016 to 2024 — eight years of global cryptographers trying
-      to break each other's submissions. The three algorithms that survived and got standardised
-      cover the two things you actually need to replace in TLS: <strong>key exchange</strong> and
-      <strong>digital signatures</strong>. For most network engineers right now, only the first one
-      is immediately relevant.
-    </p>
-
-    <div class="card-grid-3">
-      <div class="algo-card">
-        <div class="algo-tag" style="color:var(--green);">Key Encapsulation</div>
-        <h4>ML-KEM</h4>
-        <div class="fips">FIPS 203</div>
-        <p>Replaces RSA and ECDH in <strong>TLS key exchange</strong>.
-        Three parameter sets: ML-KEM-512, <strong>ML-KEM-768</strong> (recommended), ML-KEM-1024.
-        This is what protects your HTTPS sessions.</p>
-      </div>
-      <div class="algo-card">
-        <div class="algo-tag" style="color:var(--blue);">Digital Signatures</div>
-        <h4>ML-DSA</h4>
-        <div class="fips">FIPS 204</div>
-        <p>Replaces RSA and ECDSA for <strong>code signing, certificates, and authentication</strong>.
-        Lattice-based. Still being adopted — TLS certificates still use classical signatures today.</p>
-      </div>
-      <div class="algo-card">
-        <div class="algo-tag" style="color:var(--purple);">Hash-Based Signatures</div>
-        <h4>SLH-DSA</h4>
-        <div class="fips">FIPS 205</div>
-        <p>Alternative signature scheme based on <strong>hash functions</strong> (not lattices).
-        Slower and larger signatures, but a different mathematical foundation — useful for
-        algorithm diversity.</p>
-      </div>
-    </div>
-
-    <div class="callout callout-blue">
-      <strong>What's actually deployed today vs. what's coming:</strong> ML-KEM (key exchange) is already
-      live in Chrome, Firefox, Cloudflare, and F5 BIG-IP 17.5.1+. Your TLS certificates, on the other hand,
-      still use classical RSA or ECDSA — and that's okay for now. Certificates are short-lived and
-      aren't subject to harvest-now-decrypt-later attacks the way session traffic is. The certificate
-      migration (ML-DSA) is the next wave, and it's still being worked out across the industry.
-    </div>
-
-    <!-- ML-KEM in TLS 1.3 -->
-    <h3 id="mlkem-tls">ML-KEM in TLS 1.3 — Step by Step</h3>
-    <p>
-      This is where it gets practical. ML-KEM slots into the TLS 1.3 handshake in exactly the place
-      where RSA or ECDH used to be — Step 4 from the diagram above. The mechanics are a little different
-      though, and understanding why helped me appreciate what's actually being protected.
-      In RSA, you encrypt a secret and send it across. In ML-KEM, the secret is never sent —
-      it's derived independently on both sides from the encapsulation process. Harder to intercept,
-      by design.
-    </p>
-
-    <div class="sequence-diagram">
-      <div class="seq-header">
-        <div class="seq-actor">
-          <div class="actor-name">🌐 Browser</div>
-          <div class="actor-desc">TLS 1.3 client</div>
-        </div>
-        <div class="seq-spacer"></div>
-        <div class="seq-actor">
-          <div class="actor-name">☁️ Server</div>
-          <div class="actor-desc">Cloudflare · F5</div>
-        </div>
-      </div>
-
-      <div class="step-list">
-        <div class="step">
-          <div class="step-num" style="background:var(--purple);color:#fff;border:none;">1</div>
-          <div class="step-content">
-            <div class="step-title">Client Hello — advertises <code>X25519MLKEM768</code> <span style="color:var(--blue)">→ Server</span></div>
-            <div class="step-body">
-              Browser includes <code>X25519MLKEM768</code> in its <code>supported_groups</code> extension.
-              It also sends a <strong>speculative key share</strong> (ML-KEM public key + X25519 public key)
-              in the <code>key_share</code> extension, so the server can respond immediately if it supports it.
-            </div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num" style="background:var(--purple);color:#fff;border:none;">2</div>
-          <div class="step-content">
-            <div class="step-title">Server encapsulates shared secret <span style="color:var(--blue)">← Server</span></div>
-            <div class="step-body">
-              Server uses the browser's ML-KEM public key to <strong>encapsulate</strong> a random shared secret.
-              This produces a ciphertext (the encapsulated key). Server sends this ciphertext in its
-              <code>key_share</code> response.
-            </div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-num" style="background:var(--purple);color:#fff;border:none;">3</div>
-          <div class="step-content">
-            <div class="step-title">Browser decapsulates — both derive session key</div>
-            <div class="step-body">
-              Browser uses its ML-KEM private key to <strong>decapsulate</strong> the ciphertext,
-              recovering the shared secret. Both sides now hold the same secret — without it
-              ever being transmitted. Session keys are derived via HKDF.
-            </div>
-          </div>
-        </div>
-
-        <div class="step" style="background:rgba(63,185,80,0.04);border-radius:6px;padding:10px 10px 10px 0;">
-          <div class="step-num" style="background:var(--green);color:#000;border:none;">4</div>
-          <div class="step-content">
-            <div class="step-title" style="color:var(--green);">AES-256-GCM — unchanged, quantum-safe</div>
-            <div class="step-body">All HTTP data encrypted with AES-256 as before. This step is identical to classical TLS.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout callout-yellow">
-      <strong>One thing that tripped me up — HelloRetryRequest:</strong> If the client doesn't send the
-      right key share upfront, the server fires back a <code>HelloRetryRequest</code> asking it to try again.
-      That's an extra round-trip before the handshake can complete. Cloudflare's default behaviour
-      ("supported" mode) uses this approach — it works, but adds latency. Switching to "preferred" mode
-      via the API makes Cloudflare send the ML-KEM key share in the very first ClientHello, skipping that
-      extra round-trip entirely. Worth doing.
-    </div>
-
-    <!-- Hybrid Mode -->
-    <h3 id="hybrid">Hybrid Mode: X25519MLKEM768 — Belt and Suspenders</h3>
-    <p>
-      When you see <code>X25519MLKEM768</code> in a TLS negotiation, that's the hybrid group identifier.
-      It's ML-KEM-768 and the classical X25519 running together in the same handshake.
-      I genuinely like this approach — it's the kind of decision I'd make as a network engineer.
-    </p>
-
-    <div class="card" style="border-color:rgba(188,140,255,0.3);">
-      <h4 style="color:var(--purple);">Why run both at once?</h4>
+    <a href="post-quantum.html" class="section-card">
+      <div class="card-eyebrow">The replacement</div>
+      <div class="card-icon">🛡️</div>
+      <h3>Post-Quantum Cryptography</h3>
       <p>
-        ML-KEM is new. It's gone through eight years of global scrutiny and come out clean, but it doesn't
-        have the decades of real-world validation that X25519 has. The hybrid approach means an attacker
-        has to break <em>both</em> simultaneously to compromise the session. If ML-KEM ever turns out
-        to have an unexpected weakness, X25519 still has you covered. If a quantum computer eventually
-        breaks X25519, ML-KEM still has you covered.
+        What replaces RSA, why lattice problems are hard even for quantum computers,
+        the three NIST standards that came out of an eight-year competition,
+        and how ML-KEM slots into the TLS handshake you already know.
       </p>
-      <br>
+      <div class="card-link">Read → Post-Quantum Fundamentals</div>
+    </a>
+
+    <a href="network.html" class="section-card">
+      <div class="card-eyebrow">Real infrastructure</div>
+      <div class="card-icon">🏗️</div>
+      <h3>Network Architecture &amp; Verification</h3>
       <p>
-        It's the network engineering instinct applied to cryptography: redundant paths, no single point
-        of failure. I found it reassuring that the designers thought this way too.
+        My actual infrastructure has two TLS termination points and they have different ML-KEM
+        stories. Cloudflare versus F5 Distributed Cloud, the openssl commands to verify
+        negotiation yourself, and what I hit when I tried this on WSL for the first time.
       </p>
-    </div>
+      <div class="card-link">Read → Network Architecture</div>
+    </a>
 
-    <div class="card-grid">
-      <div class="card">
-        <h4>TLS 1.3 — non-negotiable</h4>
-        <p>ML-KEM uses the <code>key_share</code> extension that only exists in TLS 1.3.
-        If any part of your stack has a TLS 1.2 minimum set — whether it's a Cloudflare zone, an F5 profile,
-        or a load balancer in front — ML-KEM simply cannot negotiate. It won't fall back gracefully.
-        It just won't happen. Check your minimum TLS versions first.</p>
-      </div>
-      <div class="card">
-        <h4>Your certificates are fine — for now</h4>
-        <p>The server certificate still uses RSA or ECDSA and that's not a problem right now.
-        Certificates prove identity, not confidentiality, and they're short-lived — 90 days typically.
-        They're not worth harvesting for future decryption. Post-quantum certificates (using ML-DSA)
-        are coming but they're a separate migration and not urgent today.</p>
-      </div>
-    </div>
+  </div>
 
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       SECTION 3 — NETWORK DIAGRAM
-  ══════════════════════════════════════════════════════════════════ -->
-  <section id="network">
-    <div class="section-header">
-      <div class="section-icon icon-purple">🏗️</div>
-      <div>
-        <h2>Network Architecture &amp; ML-KEM Deployment</h2>
-        <div class="section-sub">My actual infrastructure — where TLS terminates, where ML-KEM is live, and where the gap still is</div>
-      </div>
-    </div>
-
+  <!-- Verified result box -->
+  <div class="verified-box">
+    <h3>✓ Verified on loginv2.lpl.com — April 2026</h3>
     <p>
-      One thing I had to get straight early on: there is no single TLS tunnel from the user's
-      browser all the way to the backend server. TLS terminates and re-originates at each point in the
-      path that needs to inspect or route traffic. In my setup that means <strong>two separate TLS legs</strong>,
-      each with its own configuration and its own ML-KEM status. Getting one right doesn't automatically fix the other.
+      The command below is how I confirmed ML-KEM is actually being negotiated in production,
+      not just theoretically supported. The key line to look for is
+      <code>Negotiated TLS1.3 group: X25519MLKEM768</code>.
     </p>
-
-    <!-- Network Diagram SVG -->
-    <h3 id="tls-legs">TLS Termination Points</h3>
-
-    <div class="diagram-wrap">
-      <svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
-        <defs>
-          <!-- Arrow marker -->
-          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
-          </marker>
-          <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#3fb950"/>
-          </marker>
-          <marker id="arrowhead-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
-          </marker>
-          <marker id="arrowhead-yellow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#d29922"/>
-          </marker>
-          <marker id="arrowhead-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#6e7681"/>
-          </marker>
-        </defs>
-
-        <!-- ── Background grid lines ── -->
-        <line x1="0" y1="110" x2="860" y2="110" stroke="#21262d" stroke-width="1" stroke-dasharray="4,6"/>
-
-        <!-- ══ NODE: User/Browser ══ -->
-        <rect x="10" y="70" width="100" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
-        <!-- Person icon -->
-        <circle cx="60" cy="92" r="10" fill="none" stroke="#58a6ff" stroke-width="2"/>
-        <path d="M40 130 Q60 112 80 130" fill="none" stroke="#58a6ff" stroke-width="2"/>
-        <text x="60" y="146" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
-        <text x="60" y="158" text-anchor="middle" font-size="9" fill="#8b949e">User Device</text>
-
-        <!-- ══ TLS LEG 1 ARROW + LABEL ══ -->
-        <line x1="112" y1="110" x2="205" y2="110" stroke="#3fb950" stroke-width="2" marker-end="url(#arrowhead-green)"/>
-        <!-- Leg 1 label box -->
-        <rect x="118" y="75" width="84" height="28" rx="4" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
-        <text x="160" y="87" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">TLS LEG 1</text>
-        <text x="160" y="98" text-anchor="middle" font-size="8" fill="#7ee787">TLS 1.3 + ML-KEM</text>
-
-        <!-- ══ NODE: Cloudflare WAF ══ -->
-        <rect x="207" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
-        <!-- CF cloud icon approximation -->
-        <ellipse cx="271" cy="88" rx="28" ry="14" fill="none" stroke="#f6821f" stroke-width="2"/>
-        <ellipse cx="255" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
-        <ellipse cx="287" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
-        <rect x="248" y="88" width="46" height="14" fill="#161b22"/>
-        <!-- CF Label -->
-        <text x="271" y="112" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="700">Cloudflare</text>
-        <text x="271" y="124" text-anchor="middle" font-size="9" fill="#f6821f">WAF &amp; CDN</text>
-        <!-- PQ badge -->
-        <rect x="225" y="133" width="92" height="18" rx="9" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.4)" stroke-width="1"/>
-        <text x="271" y="145" text-anchor="middle" font-size="8" fill="#3fb950" font-weight="700">✓ ML-KEM DEFAULT</text>
-
-        <!-- Internet hop -->
-        <line x1="337" y1="110" x2="390" y2="110" stroke="#30363d" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowhead)"/>
-        <text x="364" y="100" text-anchor="middle" font-size="8" fill="#6e7681">Internet</text>
-
-        <!-- ══ TLS LEG 2 ARROW + LABEL ══ -->
-        <line x1="393" y1="110" x2="486" y2="110" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowhead-blue)"/>
-        <!-- Leg 2 label box -->
-        <rect x="399" y="75" width="84" height="28" rx="4" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
-        <text x="441" y="87" text-anchor="middle" font-size="9" fill="#58a6ff" font-weight="700">TLS LEG 2</text>
-        <text x="441" y="98" text-anchor="middle" font-size="8" fill="#a5c8ff">TLS 1.3 + ML-KEM</text>
-
-        <!-- ══ NODE: F5 VIP ══ -->
-        <rect x="488" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
-        <!-- F5 logo approximation -->
-        <rect x="528" y="70" width="40" height="30" rx="4" fill="rgba(229,0,18,0.1)" stroke="#e50012" stroke-width="2"/>
-        <text x="548" y="90" text-anchor="middle" font-size="16" fill="#e50012" font-weight="900">F5</text>
-        <text x="552" y="114" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="700">F5 VIP</text>
-        <text x="552" y="126" text-anchor="middle" font-size="9" fill="#8b949e">BIG-IP LTM</text>
-        <!-- Version badge -->
-        <rect x="506" y="133" width="104" height="18" rx="9" fill="rgba(210,153,34,0.1)" stroke="rgba(210,153,34,0.4)" stroke-width="1"/>
-        <text x="558" y="145" text-anchor="middle" font-size="8" fill="#d29922" font-weight="700">⚠ TMOS 17.5.1+ REQ</text>
-
-        <!-- ══ Backend arrow ══ -->
-        <line x1="618" y1="110" x2="698" y2="110" stroke="#6e7681" stroke-width="1.5" marker-end="url(#arrowhead-muted)"/>
-        <text x="658" y="100" text-anchor="middle" font-size="8" fill="#6e7681">HTTP/S</text>
-
-        <!-- ══ NODE: Backend ══ -->
-        <rect x="700" y="70" width="110" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
-        <!-- Server stack icon -->
-        <rect x="725" y="83" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-        <rect x="725" y="97" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-        <rect x="725" y="111" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-        <text x="755" y="134" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Backend</text>
-        <text x="755" y="146" text-anchor="middle" font-size="9" fill="#8b949e">App Servers</text>
-
-        <!-- ══ ANNOTATION: Leg 1 detail ══ -->
-        <rect x="112" y="175" width="223" height="72" rx="6" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
-        <text x="124" y="192" font-size="9" fill="#7ee787" font-weight="700">LEG 1 — Browser → Cloudflare</text>
-        <text x="124" y="207" font-size="8.5" fill="#8b949e">• ML-KEM enabled by default (TLS 1.3)</text>
-        <text x="124" y="219" font-size="8.5" fill="#8b949e">• X25519MLKEM768 negotiated automatically</text>
-        <text x="124" y="231" font-size="8.5" fill="#8b949e">• Verify: pq.cloudflareresearch.com</text>
-        <text x="124" y="243" font-size="8.5" fill="#8b949e">• ~43% of CF traffic already PQ (Sept 2025)</text>
-
-        <!-- ══ ANNOTATION: Leg 2 detail ══ -->
-        <rect x="393" y="175" width="223" height="72" rx="6" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
-        <text x="405" y="192" font-size="9" fill="#a5c8ff" font-weight="700">LEG 2 — Cloudflare → F5 VIP</text>
-        <text x="405" y="207" font-size="8.5" fill="#8b949e">• Requires TMOS 17.5.1+ (released June 2025)</text>
-        <text x="405" y="219" font-size="8.5" fill="#8b949e">• Client SSL Profile: SecP256r1ML-KEM-768</text>
-        <text x="405" y="231" font-size="8.5" fill="#8b949e">• Cloudflare → F5: set to "preferred" via API</text>
-        <text x="405" y="243" font-size="8.5" fill="#8b949e">• TLS 1.3 must be enabled (not 1.2)</text>
-
-        <!-- Connector lines from annotations to diagram nodes -->
-        <line x1="223" y1="164" x2="223" y2="175" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="504" y1="164" x2="504" y2="175" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,3"/>
-      </svg>
-    </div>
-
-    <!-- Vendor Status Table -->
-    <h3 id="vendor-status">Vendor PQC Status</h3>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Component</th>
-            <th>TLS Leg</th>
-            <th>ML-KEM Status</th>
-            <th>Notes</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Cloudflare</strong><br><span style="color:var(--text-dim);font-size:11px;">Browser → CF Edge</span></td>
-            <td>Leg 1</td>
-            <td><span class="badge badge-green">Default ON</span></td>
-            <td>X25519MLKEM768 enabled for all TLS 1.3 zones. No configuration needed.</td>
-            <td style="font-size:11px;color:var(--text-dim);">developers.cloudflare.com<br>/ssl/post-quantum-cryptography/</td>
-          </tr>
-          <tr>
-            <td><strong>Cloudflare → Origin</strong><br><span style="color:var(--text-dim);font-size:11px;">CF Edge → F5</span></td>
-            <td>Leg 2 (CF side)</td>
-            <td><span class="badge badge-yellow">Configurable</span></td>
-            <td>
-              Default: <code>supported</code> (adds HelloRetryRequest round-trip).<br>
-              Better: <code>preferred</code> — set via API.<br>
-              <code>PUT /zones/{'{id}'}/cache/origin_post_quantum_encryption</code><br>
-              Body: <code>{"{"}"value": "preferred"{"}"}</code>
-            </td>
-            <td style="font-size:11px;color:var(--text-dim);">.../pqc-to-origin/</td>
-          </tr>
-          <tr>
-            <td><strong>F5 BIG-IP LTM</strong><br><span style="color:var(--text-dim);font-size:11px;">Client SSL Profile</span></td>
-            <td>Leg 2 (F5 side)</td>
-            <td><span class="badge badge-yellow">Requires 17.5.1+</span></td>
-            <td>
-              TMOS 17.5.1 (June 2025) minimum.<br>
-              Cipher: <code>SecP256r1ML-KEM-768</code><br>
-              TLS 1.3 must be enabled. Configure via GUI or TMSH.
-            </td>
-            <td style="font-size:11px;color:var(--text-dim);">community.f5.com<br>DevCentral KB 342586</td>
-          </tr>
-          <tr>
-            <td><strong>Netskope</strong><br><span style="color:var(--text-dim);font-size:11px;">Outbound proxy</span></td>
-            <td>Outbound</td>
-            <td><span class="badge badge-red">Not Yet Available</span></td>
-            <td>
-              Roadmap Phase 1: Netskope tunnels → ML-KEM.<br>
-              Roadmap Phase 2: Proxy inspection legs → ML-KEM. <strong>Not yet complete.</strong><br>
-              Gap: outbound HTTPS inspection is not post-quantum protected.
-            </td>
-            <td style="font-size:11px;color:var(--text-dim);">netskope.com<br>PQC whitepaper 2025</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- F5 Config Reference -->
-    <h3>F5 BIG-IP — Quick Configuration Reference</h3>
-
-    <div class="card-grid">
-      <div class="card">
-        <h4>GUI Path</h4>
-        <p style="font-size:12.5px;">
-          Local Traffic → Profiles → SSL → <strong>Client</strong><br>
-          → Configuration: Custom<br>
-          → Ciphers: <code>DEFAULT</code><br>
-          → Add: <code>SecP256r1ML-KEM-768</code><br>
-          → TLS 1.3: Enabled
-        </p>
-      </div>
-      <div class="card">
-        <h4>TMSH (Command Line)</h4>
-        <pre style="margin:0;font-size:11px;">tmsh modify ltm profile \
-  client-ssl &lt;name&gt; \
-  ciphers "DEFAULT:\
-+SecP256r1ML-KEM-768" \
-  options { no-tlsv1 \
-  no-tlsv1-1 }</pre>
-      </div>
-    </div>
-
-    <div class="callout callout-blue">
-      <strong>Verification after configuring F5:</strong> See the OpenSSL setup section below before running this.<br>
-      <code>openssl s_client -connect your-vip:443 -tls1_3 -groups "X25519MLKEM768:x25519" -brief</code><br>
-      Look for <code>Negotiated TLS1.3 group: X25519MLKEM768</code> in the output.
-      For browser→Cloudflare verification: <strong>pq.cloudflareresearch.com</strong>
-    </div>
-
-    <!-- Troubleshooting -->
-    <h3 id="openssl-setup">Getting a Working OpenSSL (Required for CLI Verification)</h3>
     <p>
-      I'll save you an hour of frustration here. When I first tried to verify ML-KEM negotiation from
-      the command line, I hit an error that looked like a server problem but was entirely a client problem.
-      The <code>openssl s_client</code> command needs <strong>OpenSSL 3.5.0+</strong> to even know
-      what <code>X25519MLKEM768</code> is. Older versions just refuse with a hard error — and
-      depending on your shell and OS, you might be running an older version than you think.
+      Requires OpenSSL 3.5+ — see the
+      <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL setup guide</a>
+      if you hit errors. Running in Git Bash on Windows or building from source on WSL are both covered.
     </p>
-
-    <div class="callout callout-red">
-      <strong>The error I hit — and what it actually means:</strong><br>
-      <code>Call to SSL_CONF_cmd(-groups, X25519MLKEM768:x25519) failed</code><br>
-      <code>error:0A080106:SSL routines:gid_cb:passed invalid argument ... group 'X25519MLKEM768' cannot be set</code><br><br>
-      The server is fine. Your <code>openssl</code> binary is too old or it's the wrong one in your PATH.
-      Here's how to sort it out.
-    </div>
-
-    <h3 style="margin-top:24px;">Step 1 — Figure out which openssl you're actually calling</h3>
-
-    <div class="card-grid">
-      <div class="card">
-        <h4>Check what you're running</h4>
-        <pre style="margin:8px 0 0;">which openssl
-openssl version</pre>
-        <p style="margin-top:8px;">You need <strong>3.5.0 or later</strong>. Anything older doesn't know what <code>X25519MLKEM768</code> is.</p>
-      </div>
-      <div class="card">
-        <h4>Check available PQ groups — but use the right flag</h4>
-        <pre style="margin:8px 0 0;">openssl list -tls-groups | grep MLKEM</pre>
-        <p style="margin-top:8px;">
-          I wasted time on this: <code>openssl list -groups</code> returns <em>nothing at all</em> in OpenSSL 3.5.
-          It's not broken — it's just a different command. Use <code>-tls-groups</code>.
-        </p>
-      </div>
-    </div>
-
-    <h3>Step 2 — Fix by platform</h3>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h4>🪟 Windows — Git Bash (MinGW64)</h4>
-      <p>
-        Good news here: Git for Windows already ships with OpenSSL 3.5.x in MinGW64.
-        The catch is you have to run your commands in <strong>Git Bash</strong>, not PowerShell or CMD.
-        In PowerShell, the <code>openssl</code> command resolves to something older from <code>C:\Windows\System32</code>.
-        Same command, completely different binary.
-      </p>
-      <pre style="margin:8px 0 0;"><span class="comment"># Confirm you are in Git Bash with the right binary</span>
-which openssl
-<span class="comment"># Should show: /mingw64/bin/openssl</span>
-
-openssl list -tls-groups | grep MLKEM
-<span class="comment"># Should show: X25519MLKEM768</span></pre>
-    </div>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h4>🐧 Ubuntu / WSL (Ubuntu 22.04 or 24.04)</h4>
-      <p>
-        This is where I spent most of my time. Ubuntu ships OpenSSL 3.0.x — which is too old.
-        You need to build 3.5.0 from source. It sounds more involved than it is — about 5 minutes
-        once you have the dependencies. The important thing is the <code>-Wl,-rpath</code> flag below.
-        Without it, the binary builds fine but then fails at runtime because it finds the system's old
-        libraries instead of its own. I hit that exact error and it's confusing until you know why.
-      </p>
-      <pre style="margin:8px 0 0;"><span class="comment"># 1. Install build dependencies</span>
-sudo apt install -y build-essential wget
-
-<span class="comment"># 2. Download and extract OpenSSL 3.5.0 source</span>
-wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
-tar xzf openssl-3.5.0.tar.gz
-cd openssl-3.5.0
-
-<span class="comment"># 3. Configure with rpath so it finds its own libraries (important!)</span>
-./Configure --prefix=/usr/local/openssl35 \
-            --openssldir=/usr/local/openssl35 \
-            -Wl,-rpath,/usr/local/openssl35/lib64
-
-<span class="comment"># 4. Build and install (~5 minutes)</span>
-make -j$(nproc)
-sudo make install
-
-<span class="comment"># 5. Verify</span>
-/usr/local/openssl35/bin/openssl version
-<span class="comment"># OpenSSL 3.5.0 ...</span></pre>
-
-      <p style="margin-top:12px;">
-        <strong>Without <code>-Wl,-rpath</code></strong>, the binary links against the system's old
-        <code>libssl.so.3</code> and fails with <em>"version OPENSSL_3.4.0 not found"</em> errors.
-        The rpath flag bakes the library path into the binary so it always finds its own libraries.
-      </p>
-    </div>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h4>🔧 Ubuntu / WSL — already built without rpath? Don't rebuild, just do this</h4>
-      <p>If you already ran <code>make install</code> without the rpath flag, you'll see
-      a "version not found" error when running the binary. No need to start over —
-      <code>LD_LIBRARY_PATH</code> fixes it immediately:</p>
-      <pre style="margin:8px 0 0;"><span class="comment"># Prefix every command with the library path</span>
-LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
-  /usr/local/openssl35/bin/openssl version
-
-<span class="comment"># Or add a shell function to ~/.bashrc for convenience</span>
-cat >> ~/.bashrc &lt;&lt; 'EOF'
-openssl35() {
-  LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
-    /usr/local/openssl35/bin/openssl "$@"
-}
-EOF
-source ~/.bashrc
-
-<span class="comment"># Then just use:</span>
-openssl35 version
-openssl35 s_client -connect example.com:443 -tls1_3 \
-  -groups "X25519MLKEM768:x25519" -brief</pre>
-    </div>
-
-    <h3>Step 3 — Run the actual test</h3>
-    <p>Once you have a working OpenSSL 3.5+ binary sorted, the command itself is simple and the same everywhere:</p>
-
-    <pre><span class="comment"># Replace 'openssl' with your binary path / alias if needed</span>
-openssl s_client \
-  -connect your-hostname:443 \
-  -tls1_3 \
-  -groups "X25519MLKEM768:x25519" \
+    <pre>LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
+  /usr/local/openssl35/bin/openssl s_client \
+  -connect loginv2.lpl.com:443 \
+  -tls1_3 -groups "X25519MLKEM768:x25519" \
   -CAfile /etc/ssl/certs/ca-certificates.crt \
-  -brief</pre>
+  -brief
 
-    <div class="table-wrap" style="margin-top:16px;">
-      <table>
-        <thead>
-          <tr><th>Output Line</th><th>Meaning</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>Negotiated TLS1.3 group: X25519MLKEM768</code></td>
-            <td><span class="badge badge-green">ML-KEM negotiated</span> — post-quantum key exchange is active</td>
-          </tr>
-          <tr>
-            <td><code>Negotiated TLS1.3 group: x25519</code></td>
-            <td><span class="badge badge-yellow">Classical only</span> — server does not support ML-KEM, or it is not configured</td>
-          </tr>
-          <tr>
-            <td><code>Peer Temp Key: X25519, 253 bits</code></td>
-            <td><span class="badge badge-yellow">Classical only</span> — older OpenSSL output format, same meaning as above</td>
-          </tr>
-          <tr>
-            <td><code>Verification error: unable to get local issuer certificate</code></td>
-            <td><span class="badge badge-blue">Harmless for this test</span> — custom OpenSSL build lacks CA bundle. Add <code>-CAfile /etc/ssl/certs/ca-certificates.crt</code> to fix</td>
-          </tr>
-          <tr>
-            <td><code>group 'X25519MLKEM768' cannot be set</code></td>
-            <td><span class="badge badge-red">Wrong OpenSSL binary</span> — you are calling a version older than 3.5.0. See Step 1 above</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>  ← this is what you want to see</pre>
+  </div>
 
-  </section>
-
-  <!-- Footer -->
   <footer>
     <p>
       Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
-      Everything here has been tested against real infrastructure. If something is wrong or has changed, I want to know.
-      Sources I relied on:
+      Sources:
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
       <a href="https://community.f5.com/kb/technicalarticles/future-proofing-your-network-enabling-quantum-ciphers-on-f5-big-ip-tmos-17-5-1/342586" target="_blank">F5 DevCentral KB 342586</a> ·
       <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a> ·
       <a href="https://www.rfc-editor.org/rfc/rfc8446" target="_blank">RFC 8446 (TLS 1.3)</a>
     </p>
   </footer>
-
 </main>
-
-<script>
-  // Highlight active nav link based on scroll position
-  const sections = document.querySelectorAll('section[id], h3[id]');
-  const navLinks = document.querySelectorAll('.sidebar a');
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        navLinks.forEach(link => {
-          link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) {
-            link.classList.add('active');
-          }
-        });
-      }
-    });
-  }, { rootMargin: '-20% 0px -70% 0px' });
-
-  sections.forEach(s => observer.observe(s));
-</script>
 
 </body>
 </html>
