@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Network Architecture — PQC Radar</title>
+  <title>Network Architecture: PQC Radar</title>
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
@@ -13,22 +13,36 @@
     <a href="index.html">
       <div class="radar-badge">PQC Radar</div>
       <h1>Post-Quantum<br>Cryptography</h1>
-      <div class="tagline">Personal Notes · Verified on Real Infra</div>
     </a>
   </div>
   <nav>
-    <div class="nav-section">Navigation</div>
     <a href="index.html" class="nav-home">🏠 Home</a>
-    <div class="nav-section">This Page</div>
-    <a href="#tls-legs">TLS Termination Points</a>
-    <a href="#vendor-status">Vendor PQC Status</a>
-    <a href="#f5-config">F5 Configuration</a>
-    <a href="#openssl-setup">OpenSSL Setup</a>
-    <a href="#verify">Running the Test</a>
-    <div class="nav-section">Other Sections</div>
-    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
-    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
-    <a href="post-quantum.html">Post-Quantum Crypto</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page current">Network Architecture</a>
+    <a href="#control" class="nav-sub">What You Can Control</a>
+    <a href="#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="#verify" class="nav-sub">Running the Test</a>
   </nav>
 </aside>
 
@@ -37,20 +51,51 @@
     <div class="eyebrow">Section 4 of 4</div>
     <h1>Network Architecture &amp; Verification</h1>
     <p class="subtitle">
-      My actual infrastructure has two TLS termination points and they have different ML-KEM stories.
-      This section covers the architecture, current vendor status, the openssl commands to verify
-      negotiation yourself, and everything I hit when I tried this on WSL for the first time.
+      Knowing which algorithms are quantum-safe is only part of the work. The harder question is
+      where in the network you can actually deploy them, and where you can't. This section covers
+      what I can control in my infrastructure, what I cannot, and how I verified what was actually
+      being negotiated.
     </p>
   </div>
 
-  <!-- ── TLS Termination Points ────────────────────────────────────── -->
-  <h3 id="tls-legs">Two TLS Legs — Not One</h3>
+  <!-- ── What You Can Control ──────────────────────────────────────── -->
+  <h3 id="control">What the Organisation Can and Cannot Control</h3>
   <p>
-    One thing I had to get straight early on: there is no single TLS tunnel from the user's browser
-    all the way to the backend server. TLS terminates and re-originates at each point in the path
-    that needs to inspect or route traffic. In my setup that means <strong>two separate TLS legs</strong>,
-    each with its own configuration and its own ML-KEM status. Getting one right does not automatically
-    fix the other.
+    This is the question I kept coming back to after reading the NIST standards and vendor
+    announcements. ML-KEM is available. But available where, and to whom?
+  </p>
+  <p>
+    The honest answer is: you can control your own TLS termination points. If your organisation
+    runs Cloudflare, F5 BIG-IP, or a similar edge that you configure, you can enable ML-KEM there.
+    You can verify it is negotiating. You can measure the gap between what you have and what you want.
+  </p>
+  <p>
+    What you can't control is the outbound path. Specifically, any TLS session initiated from
+    inside your network to a third-party endpoint. SaaS applications, partner APIs, vendor portals,
+    cloud services your users connect to directly. If PII or sensitive data flows from your network
+    to those endpoints, the TLS negotiation happens between your user's device (or your outbound
+    proxy) and a server you don't own. Whether that session uses ML-KEM is entirely the vendor's
+    decision. You can't configure it. You can only ask them where they're on their roadmap.
+  </p>
+
+  <div class="callout callout-yellow">
+    <strong>The gap that is harder to close:</strong> Outbound proxy inspection is exactly where
+    this gets complicated. A proxy like Netskope or Zscaler intercepts and re-encrypts outbound
+    TLS, which means it's also the TLS client for the leg connecting to the destination. If that
+    proxy doesn't support ML-KEM on its outbound leg, every session it inspects is classically
+    encrypted to the destination, regardless of what the user's device would have negotiated
+    directly. As of April 2026, Netskope's ML-KEM support for outbound proxy legs is still
+    in their roadmap and isn't yet available.
+  </div>
+
+  <!-- ── TLS Termination Points ────────────────────────────────────── -->
+  <h3 id="tls-legs">The Architecture: Two TLS Legs</h3>
+  <p>
+    For traffic coming <em>into</em> the organisation (inbound HTTPS to your published services),
+    there's no single TLS tunnel from the user's browser all the way to the backend. TLS terminates
+    and re-originates at each inspection or routing point. In my setup that means
+    <strong>two separate TLS legs</strong>, each independently configured, each with its own ML-KEM
+    status. Getting Leg 1 right does not automatically fix Leg 2.
   </p>
 
   <div class="diagram-wrap">
@@ -183,7 +228,7 @@
   </div>
 
   <!-- ── F5 Config ─────────────────────────────────────────────────── -->
-  <h3 id="f5-config">F5 BIG-IP — Configuration Reference</h3>
+  <h3 id="f5-config">F5 BIG-IP Configuration</h3>
 
   <div class="card-grid">
     <div class="card">
@@ -207,23 +252,23 @@
   </div>
 
   <!-- ── OpenSSL Setup ─────────────────────────────────────────────── -->
-  <h3 id="openssl-setup">Getting OpenSSL 3.5+ — What I Had to Do</h3>
+  <h3 id="openssl-setup">Getting OpenSSL 3.5+</h3>
   <p>
     I'll save you an hour of frustration. When I first tried to verify ML-KEM negotiation from the
     command line, I hit an error that looked like a server problem but was entirely a client problem.
     The <code>openssl s_client</code> command needs <strong>OpenSSL 3.5.0+</strong> to even know what
-    <code>X25519MLKEM768</code> is. Older versions refuse with a hard error — and depending on your
+    <code>X25519MLKEM768</code> is. Older versions refuse with a hard error, and depending on your
     shell and OS, you might be running an older version than you think.
   </p>
 
   <div class="callout callout-red">
-    <strong>The error I hit — and what it actually means:</strong><br>
+    <strong>The error I hit:</strong><br>
     <code>Call to SSL_CONF_cmd(-groups, X25519MLKEM768:x25519) failed</code><br>
-    <code>error:0A080106 ... group 'X25519MLKEM768' cannot be set</code><br><br>
-    The server is fine. The <code>openssl</code> binary in your PATH is too old or it is the wrong one.
+    <code>error:0A080106 ... group 'X25519MLKEM768' can't be set</code><br><br>
+    The server is fine. The <code>openssl</code> binary in your PATH is too old or it's the wrong one.
   </div>
 
-  <h3 style="margin-top:8px;">Step 1 — Figure out which openssl you are actually calling</h3>
+  <h3 style="margin-top:8px;">Step 1: Which openssl are you actually calling?</h3>
 
   <div class="card-grid">
     <div class="card">
@@ -233,18 +278,18 @@ openssl version</pre>
       <p style="margin-top:8px;">You need <strong>3.5.0 or later</strong>.</p>
     </div>
     <div class="card">
-      <h4>Check available PQ groups — use the right flag</h4>
+      <h4>Check available PQ groups</h4>
       <pre style="margin:8px 0 0;">openssl list -tls-groups | grep MLKEM</pre>
       <p style="margin-top:8px;"><strong>Note:</strong> <code>openssl list -groups</code> returns
-      nothing in OpenSSL 3.5 — it is a different command. Always use <code>-tls-groups</code>.
+      nothing in OpenSSL 3.5. It's a different command. Always use <code>-tls-groups</code>.
       I wasted time on this.</p>
     </div>
   </div>
 
-  <h3>Step 2 — Fix by platform</h3>
+  <h3>Step 2: Fix by platform</h3>
 
   <div class="card" style="margin-bottom:16px;">
-    <h4>🪟 Windows — Git Bash (MinGW64)</h4>
+    <h4>🪟 Windows: Git Bash (MinGW64)</h4>
     <p>
       Good news: Git for Windows already ships with OpenSSL 3.5.x in MinGW64. The catch is you have
       to run your commands in <strong>Git Bash</strong>, not PowerShell or CMD. In PowerShell, the
@@ -259,10 +304,10 @@ openssl list -tls-groups | grep MLKEM</pre>
   <div class="card" style="margin-bottom:16px;">
     <h4>🐧 Ubuntu / WSL</h4>
     <p>
-      Ubuntu ships OpenSSL 3.0.x — too old. You need to build 3.5.0 from source. The important
+      Ubuntu ships OpenSSL 3.0.x, which is too old. You need to build 3.5.0 from source. The important
       thing is the <code>-Wl,-rpath</code> flag. Without it, the binary builds fine but fails at
       runtime because it picks up the system's old libraries instead of its own. I hit that exact
-      error and it is confusing until you know why.
+      error and it's confusing until you know why.
     </p>
     <pre style="margin:10px 0 0;"><span class="comment"># Install build dependencies</span>
 sudo apt install -y build-essential wget
@@ -271,7 +316,7 @@ sudo apt install -y build-essential wget
 wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
 tar xzf openssl-3.5.0.tar.gz && cd openssl-3.5.0
 
-<span class="comment"># Configure with rpath — this is the important part</span>
+<span class="comment"># Configure with rpath. This is the important part</span>
 ./Configure --prefix=/usr/local/openssl35 \
             --openssldir=/usr/local/openssl35 \
             -Wl,-rpath,/usr/local/openssl35/lib64
@@ -318,32 +363,32 @@ openssl35 version   <span class="comment"># should show OpenSSL 3.5.0</span></pr
       <tbody>
         <tr>
           <td><code>Negotiated TLS1.3 group: X25519MLKEM768</code></td>
-          <td><span class="badge badge-green">ML-KEM negotiated</span> — post-quantum key exchange is active</td>
+          <td><span class="badge badge-green">ML-KEM negotiated.</span> Post-quantum key exchange is active</td>
         </tr>
         <tr>
           <td><code>Negotiated TLS1.3 group: x25519</code></td>
-          <td><span class="badge badge-yellow">Classical only</span> — server does not support ML-KEM or it is not configured</td>
+          <td><span class="badge badge-yellow">Classical only.</span> Server doesn't support ML-KEM or it's not configured</td>
         </tr>
         <tr>
           <td><code>Verification error: unable to get local issuer certificate</code></td>
-          <td><span class="badge badge-blue">Harmless</span> — custom OpenSSL build lacks CA bundle. Add <code>-CAfile /etc/ssl/certs/ca-certificates.crt</code></td>
+          <td><span class="badge badge-blue">Harmless.</span> Custom OpenSSL build lacks CA bundle. Add <code>-CAfile /etc/ssl/certs/ca-certificates.crt</code></td>
         </tr>
         <tr>
-          <td><code>group 'X25519MLKEM768' cannot be set</code></td>
-          <td><span class="badge badge-red">Wrong binary</span> — you are calling OpenSSL older than 3.5.0. See Step 1 above</td>
+          <td><code>group 'X25519MLKEM768' can't be set</code></td>
+          <td><span class="badge badge-red">Wrong binary.</span> You are calling OpenSSL older than 3.5.0. See Step 1 above</td>
         </tr>
       </tbody>
     </table>
   </div>
 
   <div class="callout callout-green">
-    <strong>What I got on loginv2.lpl.com through Cloudflare (April 2026):</strong><br>
+    <strong>What I got through Cloudflare (April 2026):</strong><br>
     <code>Protocol version: TLSv1.3</code><br>
     <code>Ciphersuite: TLS_AES_256_GCM_SHA384</code><br>
     <code>Negotiated TLS1.3 group: X25519MLKEM768</code><br><br>
-    Through F5 Distributed Cloud on the same domain, the negotiated group was <code>x25519</code> —
+    Through F5 Distributed Cloud on the same domain, the negotiated group was <code>x25519</code>.
     TLS 1.3, but classical only. Same domain, same protocol version, different algorithm in the
-    key_share slot. That is the entire quantum gap.
+    key_share slot. That's the entire quantum gap.
   </div>
 
   <div class="page-nav">
@@ -359,7 +404,7 @@ openssl35 version   <span class="comment"># should show OpenSSL 3.5.0</span></pr
 
   <footer>
     <p>
-      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Written by Ashish Gupta, a network security engineer working through PQC one verified step at a time.
       Sources:
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
       <a href="https://community.f5.com/kb/technicalarticles/future-proofing-your-network-enabling-quantum-ciphers-on-f5-big-ip-tmos-17-5-1/342586" target="_blank">F5 DevCentral KB 342586</a> ·
@@ -370,13 +415,13 @@ openssl35 version   <span class="comment"># should show OpenSSL 3.5.0</span></pr
 
 <script>
   const sections = document.querySelectorAll('h3[id]');
-  const navLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         navLinks.forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) link.classList.add('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
         });
       }
     });

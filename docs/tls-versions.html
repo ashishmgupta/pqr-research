@@ -5,6 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TLS 1.2 vs TLS 1.3 — PQC Radar</title>
   <link rel="stylesheet" href="static/style.css" />
+  <style>
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .cmp-col { padding: 0; }
+    .cmp-header {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .cmp-header.red { background: rgba(248,81,73,0.1); color: var(--red); border-bottom: 1px solid rgba(248,81,73,0.2); }
+    .cmp-header.green { background: rgba(63,185,80,0.08); color: var(--green); border-bottom: 1px solid rgba(63,185,80,0.2); border-left: 1px solid var(--border); }
+    .cmp-row {
+      display: contents;
+    }
+    .cmp-cell {
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      line-height: 1.55;
+    }
+    .cmp-cell.right { border-left: 1px solid var(--border); }
+    .cmp-cell:last-child, .cmp-cell.last { border-bottom: none; }
+    .cmp-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    .key-points {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .key-point {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .key-point .kp-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .key-point p { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.55; }
+
+    .detail-section { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .detail-section > .detail-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 800px) {
+      .key-points { grid-template-columns: 1fr; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .cmp-header.green, .cmp-cell.right { border-left: none; border-top: 1px solid var(--border); }
+    }
+  </style>
 </head>
 <body>
 
@@ -13,174 +91,188 @@
     <a href="index.html">
       <div class="radar-badge">PQC Radar</div>
       <h1>Post-Quantum<br>Cryptography</h1>
-      <div class="tagline">Personal Notes · Verified on Real Infra</div>
     </a>
   </div>
   <nav>
-    <div class="nav-section">Navigation</div>
     <a href="index.html" class="nav-home">🏠 Home</a>
-    <div class="nav-section">This Page</div>
-    <a href="#tls12">How TLS 1.2 Works</a>
-    <a href="#tls13">What TLS 1.3 Changed</a>
-    <a href="#why-tls13">Why TLS 1.3 Enabled ML-KEM</a>
-    <a href="#quantum-gap">TLS 1.3 Without ML-KEM</a>
-    <a href="#real-world">Cloudflare vs F5 Distributed Cloud</a>
-    <div class="nav-section">Other Sections</div>
-    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
-    <a href="post-quantum.html">Post-Quantum Crypto</a>
-    <a href="network.html">Network Architecture</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page current">TLS 1.2 vs TLS 1.3</a>
+    <a href="#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="#real-world" class="nav-sub">Real-World Test</a>
+    <a href="#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
   </nav>
 </aside>
 
 <main>
   <div class="page-header">
     <div class="eyebrow">Section 2 of 4</div>
-    <h1>TLS 1.2 vs TLS 1.3 — Why the Version Actually Matters</h1>
+    <h1>TLS 1.2 vs TLS 1.3: Why the Version Actually Matters</h1>
     <p class="subtitle">
-      The version of TLS matters more than I initially thought. TLS 1.3 wasn't just a performance
-      improvement — the architectural change it made to the key exchange is the exact reason
-      ML-KEM can exist at all. And TLS 1.3 without ML-KEM still leaves you exposed to
-      harvest now, decrypt later. Both of those things are true at the same time.
+      TLS 1.3 wasn't just a performance improvement. The architectural change it made to key
+      exchange is the reason ML-KEM can exist at all, and TLS 1.3 without ML-KEM still leaves
+      you exposed. Both of those things are true at the same time.
     </p>
   </div>
 
-  <!-- ── TLS 1.2 ───────────────────────────────────────────────────── -->
-  <h3 id="tls12">How TLS 1.2 Key Exchange Works</h3>
-  <p>
-    The way TLS 1.2 handles key exchange is straightforward once you see it laid out. The browser
-    and server both need to end up with the same secret key — but they can't just send it to each
-    other in the clear, because anyone watching the connection would have it too. So TLS 1.2 solves
-    this by using the server's certificate as the vehicle.
-  </p>
-  <p>
-    The server sends its certificate, which contains its public key. The browser generates a random
-    secret entirely on its own — the pre-master secret. It encrypts that secret using the server's
-    public key and sends it across the wire. The server uses its private key to decrypt it and
-    recovers the secret. Now both sides hold the same value, they derive the session keys from it,
-    and everything from that point on is encrypted with AES-256. Done.
-  </p>
-  <p>
-    It works. It's been working for decades. But there is a structural problem baked into this design
-    that only became obvious when quantum computing entered the conversation. The secret, even though
-    it was encrypted in transit, was protected by the server's long-term certificate key — the same
-    key used for every single connection, day after day, for the lifetime of the certificate.
-    If an adversary captured that encrypted handshake today and stored it, and later cracked that
-    private key with a quantum computer, they could go back and derive the session key and decrypt
-    everything. That is the harvest now, decrypt later attack. TLS 1.2 is wide open to it.
-  </p>
+  <!-- ── At a Glance ───────────────────────────────────────────────── -->
+  <h3 id="at-a-glance" style="margin-bottom:16px;">At a Glance</h3>
 
-  <!-- ── TLS 1.3 ───────────────────────────────────────────────────── -->
-  <h3 id="tls13">How TLS 1.3 Key Exchange Works — and What Actually Changed</h3>
-  <p>
-    TLS 1.3 changed the key exchange in a way that is more significant than it might first appear.
-    The server's certificate is no longer involved in establishing the secret at all. Its only job
-    in TLS 1.3 is authentication — proving that the server is who it claims to be by signing the
-    handshake. The actual shared secret is arrived at through a completely different mechanism.
-  </p>
-  <p>
-    Both the browser and the server independently generate temporary random key pairs — fresh ones,
-    just for this connection. The browser sends its public key share to the server in the Client Hello.
-    The server sends its public key share back in the Server Hello. Then each side takes their own
-    private key share and the other side's public key share, runs the Diffie-Hellman calculation,
-    and both independently arrive at exactly the same shared secret. The secret was never sent across
-    the wire. It was computed independently on both sides and came out identical.
-  </p>
-  <p>
-    This property has a name: <strong>forward secrecy</strong>. Because each connection uses its own
-    temporary key pair that is thrown away after the handshake, there is nothing reusable for an
-    attacker to steal. Even if someone obtained the server's long-term certificate private key —
-    the one that never changes — it would not help them decrypt past sessions. Those sessions used
-    ephemeral keys that no longer exist. That is a fundamentally different security posture from TLS 1.2.
-  </p>
-
-  <div class="card-grid">
-    <div class="card" style="border-color:rgba(248,81,73,0.2);">
-      <h4 style="color:var(--red);">TLS 1.2 Key Exchange</h4>
-      <p>
-        Browser generates secret, encrypts to server's certificate public key, sends it.<br><br>
-        Secret protected by server's <strong>long-term</strong> certificate key. Same key every session.
-        Captured handshakes can be decrypted later if the private key is ever recovered.
-      </p>
+  <div class="comparison-grid">
+    <div class="cmp-col">
+      <div class="cmp-header red">TLS 1.2</div>
     </div>
-    <div class="card" style="border-color:rgba(63,185,80,0.2);">
-      <h4 style="color:var(--green);">TLS 1.3 Key Exchange</h4>
-      <p>
-        Both sides generate <strong>ephemeral</strong> key pairs. Exchange public halves.
-        Each computes the shared secret independently. Secret never sent over the wire.<br><br>
-        Certificate only used for authentication, not key exchange. Forward secrecy on every session.
-      </p>
+    <div class="cmp-col">
+      <div class="cmp-header green">TLS 1.3</div>
+    </div>
+
+    <div class="cmp-cell">
+      <div class="cmp-label">Key Exchange</div>
+      Secret encrypted to server's <strong>long-term certificate key</strong> and sent over the wire.
+      Same cert key used for every session.
+    </div>
+    <div class="cmp-cell right">
+      <div class="cmp-label">Key Exchange</div>
+      <strong>Ephemeral key pairs</strong>, generated fresh per session. Secret computed independently
+      on both sides, never transmitted.
+    </div>
+
+    <div class="cmp-cell">
+      <div class="cmp-label">Forward Secrecy</div>
+      Not guaranteed. Steal the cert private key later → decrypt all past sessions.
+    </div>
+    <div class="cmp-cell right">
+      <div class="cmp-label">Forward Secrecy</div>
+      Always on. Past sessions can't be decrypted even if the cert key is later compromised.
+    </div>
+
+    <div class="cmp-cell">
+      <div class="cmp-label">Algorithm Flexibility</div>
+      Key exchange baked into the cipher suite string. Adding a new algorithm requires a new
+      cipher suite through a full standards process.
+    </div>
+    <div class="cmp-cell right">
+      <div class="cmp-label">Algorithm Flexibility</div>
+      Dedicated <code>key_share</code> extension, a pluggable slot. Swap in any algorithm
+      both sides support without changing anything else.
+    </div>
+
+    <div class="cmp-cell last">
+      <div class="cmp-label">ML-KEM Support</div>
+      <span class="badge badge-red">Not possible.</span> No mechanism to carry ML-KEM key material.
+    </div>
+    <div class="cmp-cell right last">
+      <div class="cmp-label">ML-KEM Support</div>
+      <span class="badge badge-green">Native.</span> ML-KEM key material goes directly into
+      the <code>key_share</code> slot.
     </div>
   </div>
 
-  <!-- ── Why TLS 1.3 Enabled ML-KEM ───────────────────────────────── -->
-  <h3 id="why-tls13">Why TLS 1.3 Was a Prerequisite for ML-KEM</h3>
-  <p>
-    This is where the engineering gets interesting — and where I understood why you cannot simply
-    retrofit ML-KEM onto TLS 1.2 no matter how much you want to.
-  </p>
-  <p>
-    TLS 1.3 introduced something called the <code>key_share</code> extension. It is a clean,
-    dedicated slot in both the Client Hello and the Server Hello. The browser puts its public key
-    material in that slot and lists the algorithms it supports. The server picks one and puts its
-    own public key material for that algorithm in the same slot in its response. The protocol itself
-    does not care what maths is underneath — it just expects both sides to fill the slot, do whatever
-    computation their chosen algorithm requires, and arrive at a shared secret. The design is
-    deliberately algorithm-agnostic.
-  </p>
-  <p>
-    That pluggability is what makes ML-KEM possible. Switching from X25519 to X25519MLKEM768 in
-    TLS 1.3 means sending different bytes into that slot. The handshake structure does not change.
-    The rest of the protocol does not change. Both sides agree on a different algorithm and the
-    <code>key_share</code> extension carries it. That is the entire mechanism.
-  </p>
-  <p>
-    TLS 1.2 does not have this. In TLS 1.2 the key exchange was fused into the cipher suite.
-    A cipher suite like <code>ECDHE-RSA-AES128-GCM-SHA256</code> is not a list of interchangeable
-    parts — it is one monolithic string that bundles together the key exchange method, the
-    authentication method, the encryption algorithm, and the MAC, all at once. To add a new key
-    exchange method in TLS 1.2 you would need to define an entirely new cipher suite, push it through
-    a standards process, and wait for every server, browser, and library implementation to adopt it.
-    That process takes years and it was not going to happen for ML-KEM.
-  </p>
-  <p>
-    And there is a deeper problem still. TLS 1.2's RSA model assumes the browser encrypts directly
-    to the server's certificate public key. The entire flow depends on that. ML-KEM uses ephemeral
-    key shares, not the certificate — the encapsulation and decapsulation happen between those
-    ephemeral keys. The assumptions are different at a fundamental level. There was no way to make
-    ML-KEM work inside the TLS 1.2 model without replacing the model itself. Which is, more or less,
-    what TLS 1.3 did.
-  </p>
+  <!-- ── Handshake diagram ─────────────────────────────────────────── -->
+  <div class="diagram-wrap" style="margin-bottom:32px;">
+    <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg"
+         font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
 
-  <div class="callout callout-blue">
-    <strong>The short version:</strong> TLS 1.3 separated the key exchange into its own pluggable
-    slot. TLS 1.2 baked the key exchange into the cipher suite and assumed it always went through
-    the certificate. ML-KEM needs the plug. TLS 1.2 does not have one.
+      <!-- TLS 1.2 side -->
+      <text x="200" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#f85149">TLS 1.2 — Key Exchange</text>
+
+      <rect x="20"  y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+      <text x="60"  y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
+      <rect x="300" y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+      <text x="340" y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Server</text>
+
+      <!-- Step 1: Server sends cert -->
+      <line x1="298" y1="85" x2="102" y2="85" stroke="#6e7681" stroke-width="1.5" marker-end="url(#arr-dim12)"/>
+      <defs>
+        <marker id="arr-dim12" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6e7681"/></marker>
+        <marker id="arr-red12" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f85149"/></marker>
+        <marker id="arr-grn13" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#3fb950"/></marker>
+        <marker id="arr-blu13" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/></marker>
+      </defs>
+      <text x="200" y="79" text-anchor="middle" font-size="9" fill="#8b949e">Certificate (public key)</text>
+
+      <!-- Step 2: Browser sends encrypted secret -->
+      <line x1="102" y1="112" x2="298" y2="112" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr-red12)"/>
+      <text x="200" y="106" text-anchor="middle" font-size="9" fill="#f85149" font-weight="600">Encrypt(secret, cert_pubkey) →</text>
+
+      <!-- Step 3: Both derive session key -->
+      <text x="200" y="138" text-anchor="middle" font-size="9" fill="#8b949e">Both derive session key from secret</text>
+      <text x="200" y="154" text-anchor="middle" font-size="9" fill="#f85149">⚠ Secret was on the wire — capturable</text>
+      <rect x="80" y="165" width="240" height="20" rx="4" fill="rgba(248,81,73,0.08)" stroke="rgba(248,81,73,0.3)" stroke-width="1"/>
+      <text x="200" y="179" text-anchor="middle" font-size="9" fill="#f85149" font-weight="700">Harvest now → decrypt later if cert key ever broken</text>
+
+      <!-- Divider -->
+      <line x1="410" y1="30" x2="410" y2="210" stroke="#21262d" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+      <!-- TLS 1.3 side -->
+      <text x="615" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#3fb950">TLS 1.3 — Key Exchange</text>
+
+      <rect x="430" y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="470" y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
+      <rect x="710" y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="750" y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Server</text>
+
+      <!-- Step 1: Browser sends ephemeral pubkey -->
+      <line x1="512" y1="85" x2="708" y2="85" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr-blu13)"/>
+      <text x="610" y="79" text-anchor="middle" font-size="9" fill="#58a6ff">key_share (ephemeral pubkey) →</text>
+
+      <!-- Step 2: Server responds with its pubkey -->
+      <line x1="708" y1="112" x2="512" y2="112" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr-blu13)"/>
+      <text x="610" y="106" text-anchor="middle" font-size="9" fill="#58a6ff">← key_share (server ephemeral pubkey)</text>
+
+      <!-- Step 3: Both compute independently -->
+      <text x="610" y="138" text-anchor="middle" font-size="9" fill="#8b949e">Each side computes shared secret independently</text>
+      <text x="610" y="154" text-anchor="middle" font-size="9" fill="#3fb950">✓ Secret never transmitted</text>
+      <rect x="455" y="165" width="310" height="20" rx="4" fill="rgba(63,185,80,0.08)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+      <text x="610" y="179" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">Ephemeral keys discarded — no reuse, no retroactive decryption</text>
+    </svg>
   </div>
 
-  <!-- ── Quantum Gap ───────────────────────────────────────────────── -->
-  <h3 id="quantum-gap">Does TLS 1.3 Without ML-KEM Protect You From Quantum?</h3>
-  <p>
-    No. I want to be direct about this because I have seen it glossed over.
-  </p>
-  <p>
-    TLS 1.3 and TLS 1.2 are equally exposed to harvest now, decrypt later attacks. Both rely on
-    key exchange algorithms — X25519, P-256, and similar — that Shor's algorithm breaks efficiently
-    on a quantum computer. The TLS version does not change this. What matters is which key exchange
-    algorithm is in the <code>key_share</code> slot. If it is X25519, a future quantum computer can
-    recover the session key from a captured handshake and decrypt everything that followed. TLS 1.3
-    with X25519 is no different from TLS 1.2 in that specific regard.
-  </p>
-  <p>
-    That said, TLS 1.3 is genuinely better — just not against quantum. It enforces forward secrecy
-    on every connection, so an attacker cannot decrypt past sessions even if they later obtain the
-    server's long-term private key through classical means. It removed the weak cipher suites and
-    export-grade algorithms that TLS 1.2 permitted. It is faster and has a cleaner security model.
-    These improvements are real. But against a quantum computer running Shor's algorithm, the version
-    of TLS is irrelevant. TLS 1.3 is what makes ML-KEM possible. ML-KEM is what actually closes
-    the quantum gap.
-  </p>
+  <!-- ── Three Key Points ──────────────────────────────────────────── -->
+  <h3 id="key-points" style="margin-bottom:16px;">Three Things to Know</h3>
 
-  <div class="table-wrap">
+  <div class="key-points">
+    <div class="key-point" style="border-color:rgba(88,166,255,0.3);">
+      <div class="kp-num">1. The prerequisite</div>
+      <p>ML-KEM <strong>requires TLS 1.3</strong>. It uses the <code>key_share</code> extension
+      that only exists in TLS 1.3. If any hop in your traffic path enforces TLS 1.2 as a minimum,
+      ML-KEM can't negotiate, silently. No error, no fallback warning.</p>
+    </div>
+    <div class="key-point" style="border-color:rgba(248,81,73,0.3);">
+      <div class="kp-num">2. TLS 1.3 alone is not enough</div>
+      <p>TLS 1.3 with X25519 (classical) is just as exposed to harvest now, decrypt later as TLS 1.2.
+      The version protects you against classical attacks. <strong>ML-KEM is what closes the quantum gap.</strong></p>
+    </div>
+    <div class="key-point" style="border-color:rgba(63,185,80,0.3);">
+      <div class="kp-num">3. The failure is invisible</div>
+      <p>When ML-KEM can't negotiate, sessions fall back to X25519 and everything works normally.
+      There's no log entry, no alert. The only way to confirm PQ is actually negotiating is to
+      run <code>openssl s_client</code> and check the output yourself.</p>
+    </div>
+  </div>
+
+  <!-- ── The table ────────────────────────────────────────────────── -->
+  <div class="table-wrap" style="margin-bottom:32px;">
     <table>
       <thead>
         <tr>
@@ -213,49 +305,100 @@
     </table>
   </div>
 
+  <!-- ── Why TLS 1.2 fails ─────────────────────────────────────────── -->
+  <h3 id="why-tls12-fails">Why You Cannot Retrofit ML-KEM onto TLS 1.2</h3>
+  <p>
+    In TLS 1.2, the key exchange algorithm is fused into the cipher suite string. Take
+    <code>ECDHE-RSA-AES128-GCM-SHA256</code> bundles the key exchange, authentication,
+    encryption, and MAC all together. Adding a new key exchange method means defining an
+    entirely new cipher suite, pushing it through a standards process, and waiting for
+    every server, browser, and library to adopt it. That was never going to happen for ML-KEM.
+  </p>
+  <p>
+    TLS 1.3 broke these apart. The <code>key_share</code> extension is a clean, dedicated slot.
+    Both sides advertise what they support, agree on an algorithm, and fill the slot with the
+    appropriate key material. The protocol doesn't care what the math underneath is.
+    Swap X25519 for X25519MLKEM768 and everything else stays the same. That pluggability
+    is what makes ML-KEM possible.
+  </p>
+
+  <div class="callout callout-blue">
+    <strong>Short version:</strong> TLS 1.3 made the key exchange pluggable.
+    TLS 1.2 hard-coded it into the cipher suite. ML-KEM needs the plug.
+    TLS 1.2 doesn't have one.
+  </div>
+
   <!-- ── Real World ────────────────────────────────────────────────── -->
-  <h3 id="real-world">The Real-World Proof — Cloudflare vs F5 Distributed Cloud on loginv2.lpl.com</h3>
+  <h3 id="real-world">The Same Version, Different Quantum Posture</h3>
   <p>
-    I did not have to take this on faith. I verified it directly.
+    I tested this directly with <code>openssl s_client</code>, advertising
+    <code>X25519MLKEM768</code> against two different CDN paths for the same domain:
+    one through Cloudflare, one through F5 Distributed Cloud.
   </p>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:rgba(63,185,80,0.3);">
+      <h4 style="color:var(--green);">Through Cloudflare</h4>
+      <pre style="margin:8px 0 0;font-size:12px;">Negotiated TLS1.3 group: X25519MLKEM768</pre>
+      <p style="margin-top:10px;font-size:13px;">Post-quantum key exchange confirmed. ML-KEM is on by default for TLS 1.3 zones.</p>
+    </div>
+    <div class="card" style="border-color:rgba(248,81,73,0.2);">
+      <h4 style="color:var(--red);">Through F5 Distributed Cloud</h4>
+      <pre style="margin:8px 0 0;font-size:12px;">Negotiated TLS1.3 group: x25519</pre>
+      <p style="margin-top:10px;font-size:13px;">TLS 1.3, but classical only. F5 Distributed Cloud doesn't yet support ML-KEM in its key_share handling.</p>
+    </div>
+  </div>
+
   <p>
-    loginv2.lpl.com sits behind both Cloudflare and F5 Distributed Cloud, which gave me a useful
-    natural experiment. I used <code>openssl s_client</code> with OpenSSL 3.5 to connect and
-    advertised <code>X25519MLKEM768</code> as a supported group. Here is what came back from each path.
-  </p>
-  <p>
-    Through Cloudflare: <code>Negotiated TLS1.3 group: X25519MLKEM768</code>. Post-quantum key
-    exchange confirmed. Cloudflare accepted the ML-KEM key share and negotiated the hybrid group.
-  </p>
-  <p>
-    Through F5 Distributed Cloud: <code>Negotiated TLS1.3 group: x25519</code>. TLS 1.3, yes —
-    but classical key exchange only. F5 Distributed Cloud does not support ML-KEM in its
-    <code>key_share</code> handling, so it fell back to the classical X25519.
-  </p>
-  <p>
-    Both are TLS 1.3. Both use AES-256-GCM for the data. Both present valid certificates. The only
-    difference is one algorithm in one extension slot — and that single difference is the entire
-    quantum gap. A session through Cloudflare today is protected against harvest now, decrypt later.
-    A session through F5 Distributed Cloud today is not. Same protocol version, same data encryption,
-    different answer in the <code>key_share</code> slot.
-  </p>
-  <p>
-    That is the lesson I took from this. TLS 1.3 is the foundation — you cannot have ML-KEM without
-    it. But TLS 1.3 alone is not the finish line. The algorithm is what closes the gap.
+    Same domain. Same TLS version. Same cipher for data encryption. The only difference is
+    one algorithm in one extension slot. That's the entire quantum gap.
   </p>
 
   <div class="callout callout-green">
-    <strong>How to run this test yourself:</strong> See the
+    <strong>Run it yourself:</strong> See the
     <a href="network.html#openssl-setup" style="color:var(--green);">OpenSSL setup guide</a>
-    in the Network Architecture section. You need OpenSSL 3.5+ and the right shell context.
-    The command and what to look for are covered there in full, including the WSL build steps
-    that tripped me up the first time.
+    in the Network Architecture section. You need OpenSSL 3.5+. The version matters here too.
+  </div>
+
+  <!-- ── Detail section ───────────────────────────────────────────── -->
+  <div class="detail-section">
+    <div class="detail-label">If you want to understand why</div>
+
+    <h3 id="detail">TLS 1.2 Key Exchange</h3>
+    <p>
+      The server sends its certificate, which contains its public key. The browser generates
+      a random secret, encrypts it using that public key, and sends it across. The server
+      decrypts it with its private key. Both sides now hold the same secret and derive the
+      session keys from it.
+    </p>
+    <p>
+      The structural problem: the secret is protected by the server's long-term certificate
+      key, the same key used for every connection, for the lifetime of the certificate.
+      An adversary who captures the handshake today can store it and decrypt it retroactively
+      if they ever obtain or break that private key. That's the harvest now, decrypt later
+      window TLS 1.2 leaves open.
+    </p>
+
+    <h3>TLS 1.3 Key Exchange</h3>
+    <p>
+      The certificate's role changes entirely. In TLS 1.3 it's only used for authentication,
+      proving the server's identity by signing the handshake. It plays no part in establishing
+      the secret.
+    </p>
+    <p>
+      Instead, both sides generate temporary key pairs, fresh for this connection only.
+      They exchange public halves. Each side then runs the Diffie-Hellman calculation using
+      their own private half and the other side's public half, and both independently arrive
+      at the same shared secret. The secret was never transmitted. When the session ends,
+      the ephemeral keys are discarded. There's nothing for an attacker to reuse.
+      This is forward secrecy, and TLS 1.3 makes it mandatory on every connection.
+    </p>
   </div>
 
   <div class="page-nav">
     <a href="pre-quantum.html">
       <span class="nav-label">← Previous</span>
-      <span class="nav-title">Pre-Quantum Cryptography</span>
+      <span class="nav-title">The Problem</span>
     </a>
     <a href="post-quantum.html" class="next">
       <span class="nav-label">Next →</span>
@@ -265,7 +408,7 @@
 
   <footer>
     <p>
-      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Written by Ashish Gupta, a network security engineer working through PQC one verified step at a time.
       Sources:
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
       <a href="https://www.rfc-editor.org/rfc/rfc8446" target="_blank">RFC 8446 (TLS 1.3)</a>
@@ -275,13 +418,13 @@
 
 <script>
   const sections = document.querySelectorAll('h3[id]');
-  const navLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         navLinks.forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) link.classList.add('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
         });
       }
     });

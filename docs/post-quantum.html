@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Post-Quantum Cryptography — PQC Radar</title>
+  <title>Post-Quantum Cryptography: PQC Radar</title>
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
@@ -13,21 +13,36 @@
     <a href="index.html">
       <div class="radar-badge">PQC Radar</div>
       <h1>Post-Quantum<br>Cryptography</h1>
-      <div class="tagline">Personal Notes · Verified on Real Infra</div>
     </a>
   </div>
   <nav>
-    <div class="nav-section">Navigation</div>
     <a href="index.html" class="nav-home">🏠 Home</a>
-    <div class="nav-section">This Page</div>
-    <a href="#why-lattice">Why Lattice Problems</a>
-    <a href="#nist-standards">NIST Standards</a>
-    <a href="#mlkem-tls">ML-KEM in TLS 1.3</a>
-    <a href="#hybrid">Hybrid Mode</a>
-    <div class="nav-section">Other Sections</div>
-    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
-    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
-    <a href="network.html">Network Architecture</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="post-quantum.html" class="nav-page current">Post-Quantum Crypto</a>
+    <a href="#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
   </nav>
 </aside>
 
@@ -36,65 +51,21 @@
     <div class="eyebrow">Section 3 of 4</div>
     <h1>Post-Quantum Cryptography</h1>
     <p class="subtitle">
-      Once I understood what was broken, the next question was what replaces it and why the
-      replacement is actually trustworthy. This section covers lattice problems, the NIST
-      standards that came out of an eight-year competition, and how ML-KEM slots into the
-      TLS handshake you already know without changing anything else.
+      Once I understood what was broken, the next question was what replaces it, and more practically, whether it's actually deployed in the infrastructure I manage.
+      The short answer is: NIST finalized the standards in 2024, the key exchange algorithm
+      (ML-KEM) is already shipping in Cloudflare and modern browsers, and it slots into TLS 1.3
+      without changing anything else about the protocol.
     </p>
-  </div>
-
-  <!-- ── Lattice Problems ──────────────────────────────────────────── -->
-  <h3 id="why-lattice">Why Lattice Problems Resist Quantum Computers</h3>
-  <p>
-    My first question when I started looking at this was: if RSA and ECDH are broken, what replaces
-    them, and why is the replacement any better? The answer is that post-quantum algorithms are built
-    on completely different mathematical problems — ones that Shor's algorithm simply does not apply to.
-    The leading approach is <strong>lattice-based cryptography</strong>, and the intuition behind it
-    is easier to grasp than I expected.
-  </p>
-
-  <div class="card" style="margin-bottom:16px;">
-    <h4>🔷 What is a Lattice? (The honest non-mathematician explanation)</h4>
-    <p>
-      Picture a regular grid of dots — like graph paper. Now imagine that same grid but in 1,000
-      dimensions instead of 2. That is a lattice. The hard problem is this: given that grid, find
-      the shortest path between two points. In 2D that is trivial. In 1,000 dimensions it becomes
-      genuinely computationally intractable — and crucially, nobody has found a quantum shortcut
-      for it the way Shor found one for factoring. That is the mathematical foundation ML-KEM is
-      built on.
-    </p>
-  </div>
-
-  <div class="card-grid">
-    <div class="card" style="border-color:rgba(248,81,73,0.2);">
-      <h4>RSA / ECDH — Classical Algorithms</h4>
-      <p>
-        Security based on <strong>integer factorization</strong> and <strong>discrete
-        logarithm</strong>. Both are solved efficiently by Shor's algorithm on a quantum computer.
-        <br><br>
-        <span class="badge badge-red">Broken by quantum</span>
-      </p>
-    </div>
-    <div class="card" style="border-color:rgba(63,185,80,0.2);">
-      <h4>ML-KEM — Post-Quantum</h4>
-      <p>
-        Security based on <strong>Module Learning With Errors (MLWE)</strong> — a lattice problem.
-        No quantum algorithm analogous to Shor's is known for lattice problems. Best known quantum
-        attack gives minimal advantage.
-        <br><br>
-        <span class="badge badge-green">Quantum-resistant</span>
-      </p>
-    </div>
   </div>
 
   <!-- ── NIST Standards ────────────────────────────────────────────── -->
   <h3 id="nist-standards">NIST Post-Quantum Standards (2024)</h3>
   <p>
-    NIST ran an open competition from 2016 to 2024 — eight years of global cryptographers trying to
-    break each other's submissions. The three algorithms that survived and got standardised cover the
-    two things you need to replace in TLS: <strong>key exchange</strong> and
-    <strong>digital signatures</strong>. For most network engineers right now, only the first one
-    is immediately relevant.
+    NIST ran an open competition from 2016 to 2024. Eight years of cryptographers worldwide
+    trying to break each other's submissions. Three algorithms came out standardised. They cover
+    the two things you need to replace in TLS: <strong>key exchange</strong> and
+    <strong>digital signatures</strong>. For network infrastructure right now, the key exchange
+    one is the immediate priority. The signature migration is a separate wave, further out.
   </p>
 
   <div class="card-grid-3">
@@ -103,44 +74,42 @@
       <h4>ML-KEM</h4>
       <div class="fips">FIPS 203</div>
       <p>Replaces RSA and ECDH in <strong>TLS key exchange</strong>. Three parameter sets:
-      ML-KEM-512, <strong>ML-KEM-768</strong> (recommended), ML-KEM-1024. This is what
-      protects your HTTPS sessions today.</p>
+      ML-KEM-512, <strong>ML-KEM-768</strong> (the one in active deployment), ML-KEM-1024.
+      This is what protects session traffic.</p>
     </div>
     <div class="algo-card">
       <div class="algo-tag" style="color:var(--blue);">Digital Signatures</div>
       <h4>ML-DSA</h4>
       <div class="fips">FIPS 204</div>
       <p>Replaces RSA and ECDSA for <strong>code signing, certificates, and authentication</strong>.
-      Still being adopted — TLS certificates still use classical signatures today.
-      This is the next wave of migration.</p>
+      TLS certificates still use classical signatures today. That migration is still being worked out across the industry.</p>
     </div>
     <div class="algo-card">
       <div class="algo-tag" style="color:var(--purple);">Hash-Based Signatures</div>
       <h4>SLH-DSA</h4>
       <div class="fips">FIPS 205</div>
-      <p>Alternative signature scheme based on <strong>hash functions</strong> rather than
-      lattices. Slower and larger signatures, but a different mathematical foundation —
-      useful for algorithm diversity.</p>
+      <p>An alternative signature scheme based on hash functions rather than the same mathematical
+      family as ML-KEM. Slower and larger, but provides algorithm diversity. Useful if you don't want all your eggs in one basket.</p>
     </div>
   </div>
 
   <div class="callout callout-blue">
-    <strong>What is actually deployed today vs. what is coming:</strong> ML-KEM (key exchange) is
+    <strong>What is deployed today vs what is coming:</strong> ML-KEM (key exchange) is
     already live in Chrome, Firefox, Cloudflare, and F5 BIG-IP 17.5.1+. Your TLS certificates
-    still use classical RSA or ECDSA — and that is fine for now. Certificates are short-lived and
-    not subject to harvest now, decrypt later attacks the way session traffic is. The certificate
-    migration (ML-DSA) is the next wave, and it is still being worked out across the industry.
+    still use classical RSA or ECDSA, and that's acceptable for now. Certificates are short-lived
+    and aren't the target of harvest now, decrypt later attacks the way session traffic is.
+    The certificate migration (ML-DSA) is the next wave and isn't urgent yet.
   </div>
 
   <!-- ── ML-KEM in TLS 1.3 ─────────────────────────────────────────── -->
-  <h3 id="mlkem-tls">ML-KEM in TLS 1.3 — Step by Step</h3>
+  <h3 id="mlkem-tls">How ML-KEM Slots Into TLS 1.3</h3>
   <p>
-    This is where it gets practical. ML-KEM slots into the TLS 1.3 handshake in exactly the place
-    where RSA or ECDH used to be — the key exchange step. The mechanics are a little different
-    though, and understanding them helped me appreciate what is actually being protected.
-    In RSA, you encrypt a secret and send it across. In ML-KEM, the secret is never sent —
-    it is derived independently on both sides from the encapsulation process. Harder to intercept,
-    by design.
+    This is the part that made it feel practical rather than theoretical. ML-KEM occupies exactly
+    the same slot in the TLS 1.3 handshake where ECDH used to sit. The protocol structure doesn't change. Both sides advertise what they support, agree on an algorithm, exchange the key material
+    through the <code>key_share</code> extension, and derive the session key. The difference is
+    what happens mathematically inside that exchange. The result is that the session key is
+    never transmitted at all. It is derived independently on both sides from the encapsulation
+    process.
   </p>
 
   <div class="sequence-diagram">
@@ -159,11 +128,11 @@
       <div class="step">
         <div class="step-num" style="background:var(--purple);color:#fff;border:none;">1</div>
         <div class="step-content">
-          <div class="step-title">Client Hello — advertises <code>X25519MLKEM768</code> → Server</div>
+          <div class="step-title">Client Hello: advertises <code>X25519MLKEM768</code> → Server</div>
           <div class="step-body">
-            Browser includes <code>X25519MLKEM768</code> in its <code>supported_groups</code>.
-            It also sends a <strong>speculative key share</strong> — ML-KEM public key and X25519
-            public key — so the server can respond immediately without a round-trip if it supports ML-KEM.
+            Browser includes <code>X25519MLKEM768</code> in its <code>supported_groups</code>
+            and sends a speculative key share upfront so the server can respond immediately
+            without an extra round-trip if it supports ML-KEM.
           </div>
         </div>
       </div>
@@ -181,70 +150,57 @@
       <div class="step">
         <div class="step-num" style="background:var(--purple);color:#fff;border:none;">3</div>
         <div class="step-content">
-          <div class="step-title">Browser decapsulates — both derive the same session key</div>
+          <div class="step-title">Browser decapsulates: both sides derive the same session key</div>
           <div class="step-body">
             Browser uses its ML-KEM private key to <strong>decapsulate</strong> the ciphertext,
-            recovering the shared secret. Both sides now hold the same secret — without it ever
-            being transmitted. Session keys are then derived via HKDF.
+            recovering the shared secret. Both sides now hold the same value, without it ever
+            being transmitted across the wire. Session keys are then derived via HKDF.
           </div>
         </div>
       </div>
       <div class="step" style="background:rgba(63,185,80,0.04);border-radius:6px;padding:10px 10px 10px 0;">
         <div class="step-num" style="background:var(--green);color:#000;border:none;">4</div>
         <div class="step-content">
-          <div class="step-title" style="color:var(--green);">AES-256-GCM — unchanged, quantum-safe</div>
-          <div class="step-body">All HTTP data encrypted with AES-256 as before. This step is identical to classical TLS.</div>
+          <div class="step-title" style="color:var(--green);">AES-256-GCM, unchanged</div>
+          <div class="step-body">All HTTP data encrypted with AES-256. This step is identical to classical TLS. No change needed here.</div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="callout callout-yellow">
-    <strong>One thing that tripped me up — HelloRetryRequest:</strong> If the client does not send
+    <strong>One thing that tripped me up: HelloRetryRequest.</strong> If the client doesn't send
     the right key share upfront, the server fires back a <code>HelloRetryRequest</code> asking it
-    to try again with the correct group. That is an extra round-trip before the handshake can complete.
-    Cloudflare's default behaviour ("supported" mode) uses this approach — it works, but adds latency.
-    Switching to "preferred" mode via the Cloudflare API makes it send the ML-KEM key share in the
-    very first ClientHello, skipping that extra round-trip entirely. Worth doing.
+    to retry with the correct group. That's an extra round-trip. Cloudflare's default behaviour
+    ("supported" mode) uses this approach. It works but adds latency. Setting Cloudflare to
+    "preferred" mode via the API makes it send the ML-KEM key share in the first ClientHello,
+    skipping that round-trip. Worth doing if you're tuning for performance.
   </div>
 
   <!-- ── Hybrid Mode ───────────────────────────────────────────────── -->
-  <h3 id="hybrid">Hybrid Mode: X25519MLKEM768 — Belt and Suspenders</h3>
+  <h3 id="hybrid">Why X25519MLKEM768 Runs Both Algorithms Together</h3>
   <p>
-    When you see <code>X25519MLKEM768</code> in a TLS negotiation, that is the hybrid group
-    identifier. It is ML-KEM-768 and the classical X25519 running together in the same handshake.
-    I genuinely like this approach — it is the kind of decision I would make as a network engineer.
+    When you see <code>X25519MLKEM768</code> in a TLS negotiation, that's a hybrid group
+    identifier. It's ML-KEM-768 and the classical X25519 running simultaneously in the same handshake.
+    I genuinely appreciate this approach. ML-KEM is new. It went through eight years of global
+    scrutiny and came out clean, but it doesn't have the decades of real-world deployment that
+    X25519 has. Running both means an attacker would have to break both simultaneously to compromise
+    the session. If ML-KEM ever turns out to have an unexpected weakness, X25519 still holds.
+    If a quantum computer eventually breaks X25519, ML-KEM still holds.
   </p>
-
-  <div class="card" style="border-color:rgba(188,140,255,0.3);">
-    <h4 style="color:var(--purple);">Why run both algorithms at once?</h4>
-    <p>
-      ML-KEM is new. It has gone through eight years of global scrutiny and come out clean, but it
-      does not have the decades of real-world validation that X25519 has. The hybrid approach means
-      an attacker has to break <em>both</em> simultaneously to compromise the session. If ML-KEM
-      ever turns out to have an unexpected weakness, X25519 still has you covered. If a quantum
-      computer eventually breaks X25519, ML-KEM still has you covered.
-    </p>
-    <p style="margin-top:10px;">
-      It is the network engineering instinct applied to cryptography: redundant paths, no single
-      point of failure. I found it reassuring that the designers thought this way too.
-    </p>
-  </div>
 
   <div class="card-grid">
     <div class="card">
-      <h4>TLS 1.3 — non-negotiable</h4>
+      <h4>TLS 1.3 is non-negotiable</h4>
       <p>ML-KEM uses the <code>key_share</code> extension that only exists in TLS 1.3. If any
-      part of your stack has a TLS 1.2 minimum set — a Cloudflare zone, an F5 profile, a load
-      balancer — ML-KEM cannot negotiate. It will not fall back gracefully. It just will not happen.
-      Check your minimum TLS versions first.</p>
+      part of your stack has TLS 1.2 as a minimum (a Cloudflare zone setting, an F5 profile,
+      a load balancer), ML-KEM can't negotiate. It doesn't fall back gracefully. It just won't happen. Check your minimum TLS versions before anything else.</p>
     </div>
     <div class="card">
-      <h4>Your certificates are fine — for now</h4>
-      <p>The server certificate still uses RSA or ECDSA and that is not a problem today. Certificates
-      prove identity, not confidentiality, and they are short-lived — 90 days typically. They are not
-      worth harvesting for future decryption. Post-quantum certificates using ML-DSA are coming but
-      they are a separate migration and not urgent yet.</p>
+      <h4>Certificates are fine for now</h4>
+      <p>The server certificate still uses RSA or ECDSA and that's not a problem today.
+      Certificates prove identity, not confidentiality, and they're short-lived (90 days typically). They aren't worth harvesting for future decryption. Post-quantum certificates
+      using ML-DSA are coming but they're a separate migration, not urgent yet.</p>
     </div>
   </div>
 
@@ -261,7 +217,7 @@
 
   <footer>
     <p>
-      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Written by Ashish Gupta, a network security engineer working through PQC one verified step at a time.
       Sources:
       <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a> ·
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
@@ -272,13 +228,13 @@
 
 <script>
   const sections = document.querySelectorAll('h3[id]');
-  const navLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         navLinks.forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) link.classList.add('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
         });
       }
     });

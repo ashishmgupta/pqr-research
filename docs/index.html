@@ -66,16 +66,36 @@
     <a href="index.html">
       <div class="radar-badge">PQC Radar</div>
       <h1>Post-Quantum<br>Cryptography</h1>
-      <div class="tagline">Personal Notes · Verified on Real Infra</div>
     </a>
   </div>
   <nav>
-    <div class="nav-section">Sections</div>
-    <a href="index.html" class="active nav-home">🏠 Home</a>
-    <a href="pre-quantum.html">Pre-Quantum Crypto</a>
-    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
-    <a href="post-quantum.html">Post-Quantum Crypto</a>
-    <a href="network.html">Network Architecture</a>
+    <a href="index.html" class="nav-home active">🏠 Home</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
   </nav>
 </aside>
 
@@ -86,11 +106,11 @@
     <p>
       Post-quantum cryptography started showing up in vendor roadmaps and compliance conversations,
       and I realised I was nodding along without really understanding it. So I decided to learn it
-      properly — not just the what, but the why and how it works on infrastructure I actually manage.
+      properly. Not just the what, but the why and how it works on infrastructure I actually manage.
     </p>
     <p>
       This site documents what I found. Everything here has been tested and verified against real
-      infrastructure — Cloudflare, F5 BIG-IP, and a domain I can run <code>openssl s_client</code>
+      infrastructure: Cloudflare, F5 BIG-IP, and a domain I can run <code>openssl s_client</code>
       against. It's not the only way to understand this topic, but it's the one that worked for me.
     </p>
     <div class="pill-row">
@@ -109,13 +129,13 @@
     <a href="pre-quantum.html" class="section-card">
       <div class="card-eyebrow">Start here</div>
       <div class="card-icon">🔐</div>
-      <h3>Pre-Quantum Cryptography</h3>
+      <h3>The Problem</h3>
       <p>
-        Before I could understand what post-quantum cryptography replaces, I needed to be clear
-        on what actually happens in a TLS handshake today. How RSA works, why it's vulnerable,
-        and the attack that doesn't need a quantum computer to start.
+        What actually happens in a TLS handshake, which part of it quantum computers break,
+        and why the attack doesn't need a quantum computer to start. The harvest now,
+        decrypt later threat is the reason this is worth paying attention to now.
       </p>
-      <div class="card-link">Read → Pre-Quantum Fundamentals</div>
+      <div class="card-link">Read → The Problem</div>
     </a>
 
     <a href="tls-versions.html" class="section-card">
@@ -123,9 +143,9 @@
       <div class="card-icon">🔄</div>
       <h3>TLS 1.2 vs TLS 1.3</h3>
       <p>
-        The version of TLS matters more than I initially thought. TLS 1.3 wasn't just a performance
-        improvement — the architectural change it made to the key exchange is the exact reason
-        ML-KEM can exist at all. TLS 1.2 simply has no room for it.
+        Why the TLS version actually matters here. TLS 1.3 made the key exchange pluggable.
+        That's the architectural reason ML-KEM can exist at all. TLS 1.2 simply has no slot
+        for it. And TLS 1.3 alone, without ML-KEM, still leaves you exposed.
       </p>
       <div class="card-link">Read → TLS Version Comparison</div>
     </a>
@@ -135,21 +155,21 @@
       <div class="card-icon">🛡️</div>
       <h3>Post-Quantum Cryptography</h3>
       <p>
-        What replaces RSA, why lattice problems are hard even for quantum computers,
-        the three NIST standards that came out of an eight-year competition,
-        and how ML-KEM slots into the TLS handshake you already know.
+        NIST finalised three algorithms in 2024. ML-KEM is the one that matters for TLS key
+        exchange and it's already shipping in Cloudflare and modern browsers. This section
+        covers what it is, which parameter set is in active use, and how it fits into TLS 1.3.
       </p>
       <div class="card-link">Read → Post-Quantum Fundamentals</div>
     </a>
 
     <a href="network.html" class="section-card">
-      <div class="card-eyebrow">Real infrastructure</div>
+      <div class="card-eyebrow">Where it lands</div>
       <div class="card-icon">🏗️</div>
       <h3>Network Architecture &amp; Verification</h3>
       <p>
-        My actual infrastructure has two TLS termination points and they have different ML-KEM
-        stories. Cloudflare versus F5 Distributed Cloud, the openssl commands to verify
-        negotiation yourself, and what I hit when I tried this on WSL for the first time.
+        Knowing which algorithms are quantum-safe is the easy part. The harder question is where
+        you can actually deploy them, and where you can't. What the org controls vs what depends
+        on vendor roadmaps, plus how to verify what is actually being negotiated.
       </p>
       <div class="card-link">Read → Network Architecture</div>
     </a>
@@ -158,20 +178,20 @@
 
   <!-- Verified result box -->
   <div class="verified-box">
-    <h3>✓ Verified on loginv2.lpl.com — April 2026</h3>
+    <h3>✓ Verified against a Cloudflare-fronted domain (April 2026)</h3>
     <p>
       The command below is how I confirmed ML-KEM is actually being negotiated in production,
       not just theoretically supported. The key line to look for is
       <code>Negotiated TLS1.3 group: X25519MLKEM768</code>.
     </p>
     <p>
-      Requires OpenSSL 3.5+ — see the
+      Requires OpenSSL 3.5+. See the
       <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL setup guide</a>
       if you hit errors. Running in Git Bash on Windows or building from source on WSL are both covered.
     </p>
     <pre>LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
   /usr/local/openssl35/bin/openssl s_client \
-  -connect loginv2.lpl.com:443 \
+  -connect &lt;your-cloudflare-domain&gt;:443 \
   -tls1_3 -groups "X25519MLKEM768:x25519" \
   -CAfile /etc/ssl/certs/ca-certificates.crt \
   -brief
@@ -181,7 +201,7 @@
 
   <footer>
     <p>
-      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Written by Ashish Gupta, a network security engineer working through PQC one verified step at a time.
       Sources:
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
       <a href="https://community.f5.com/kb/technicalarticles/future-proofing-your-network-enabling-quantum-ciphers-on-f5-big-ip-tmos-17-5-1/342586" target="_blank">F5 DevCentral KB 342586</a> ·

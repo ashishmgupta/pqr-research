@@ -73,7 +73,59 @@ body {
   margin-bottom: 8px;
   text-transform: uppercase;
 }
-.sidebar nav { padding: 12px 0; }
+.sidebar nav { padding: 12px 0 24px; }
+
+/* Home link */
+.sidebar a.nav-home {
+  display: block;
+  padding: 7px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  margin-bottom: 6px;
+}
+.sidebar a.nav-home:hover { color: var(--blue); background: var(--surface-2); }
+.sidebar a.nav-home.active { color: var(--blue); }
+
+/* Section-level page links */
+.sidebar a.nav-page {
+  display: block;
+  padding: 6px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-left: 2px solid transparent;
+  margin-top: 14px;
+  transition: all 0.15s;
+}
+.sidebar a.nav-page:hover { color: var(--text); }
+.sidebar a.nav-page.current { color: var(--text); }
+
+/* Sub-section links */
+.sidebar a.nav-sub {
+  display: block;
+  padding: 4px 20px 4px 30px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.45;
+}
+.sidebar a.nav-sub:hover { color: var(--text); background: var(--surface-2); }
+.sidebar a.nav-sub.active {
+  color: var(--blue);
+  border-left-color: var(--blue);
+  background: rgba(88,166,255,0.06);
+}
+
+/* Legacy fallback — keep for any stray .nav-section divs */
 .nav-section {
   padding: 16px 20px 4px;
   font-size: 10px;
@@ -82,24 +134,6 @@ body {
   letter-spacing: 0.1em;
   color: var(--text-dim);
 }
-.sidebar a {
-  display: block;
-  padding: 6px 20px 6px 28px;
-  font-size: 13px;
-  color: var(--text-muted);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  transition: all 0.15s;
-  line-height: 1.4;
-}
-.sidebar a:hover { color: var(--text); background: var(--surface-2); }
-.sidebar a.active { color: var(--blue); border-left-color: var(--blue); background: rgba(88,166,255,0.06); }
-.sidebar a.nav-home {
-  padding-left: 20px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-.sidebar a.nav-home:hover { color: var(--blue); }
 
 /* ── Main content ────────────────────────────────────────────────── */
 main {

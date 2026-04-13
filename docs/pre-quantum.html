@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pre-Quantum Cryptography — PQC Radar</title>
+  <title>The Problem — PQC Radar</title>
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
@@ -13,249 +13,230 @@
     <a href="index.html">
       <div class="radar-badge">PQC Radar</div>
       <h1>Post-Quantum<br>Cryptography</h1>
-      <div class="tagline">Personal Notes · Verified on Real Infra</div>
     </a>
   </div>
   <nav>
-    <div class="nav-section">Navigation</div>
     <a href="index.html" class="nav-home">🏠 Home</a>
-    <div class="nav-section">This Page</div>
-    <a href="#tls-handshake">The TLS Handshake</a>
-    <a href="#rsa-math">RSA: The Maths</a>
-    <a href="#quantum-threat">Shor's Algorithm</a>
-    <a href="#hndl">Harvest Now, Decrypt Later</a>
-    <div class="nav-section">Other Sections</div>
-    <a href="tls-versions.html">TLS 1.2 vs TLS 1.3</a>
-    <a href="post-quantum.html">Post-Quantum Crypto</a>
-    <a href="network.html">Network Architecture</a>
+
+    <a href="pre-quantum.html" class="nav-page current">The Problem</a>
+    <a href="#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
   </nav>
 </aside>
 
 <main>
   <div class="page-header">
     <div class="eyebrow">Section 1 of 4</div>
-    <h1>Pre-Quantum Cryptography</h1>
+    <h1>The Problem</h1>
     <p class="subtitle">
-      Before I could understand what post-quantum cryptography changes, I needed to be really
-      clear on what it's replacing. I thought I knew how TLS worked. Turns out I had a few gaps.
-      This section is what I actually learned — starting from the handshake, through RSA,
-      through Shor's algorithm, and ending at the attack that doesn't need a quantum computer to start.
+      The starting point for me wasn't cryptography. It was the network. Where does PII actually
+      travel? Which segments of that path cross the internet and can be intercepted? Those are the
+      segments where the quantum threat is real and where the organisation needs to act.
     </p>
   </div>
 
-  <!-- ── TLS Handshake ─────────────────────────────────────────────── -->
-  <h3 id="tls-handshake">How a TLS Handshake Works Today</h3>
+  <!-- ── Where PII Flows ───────────────────────────────────────────── -->
+  <h3 id="where-pii-flows">Where PII Flows</h3>
   <p>
-    The key thing that clicked for me: the TLS handshake is solving <em>two completely separate
-    problems</em> at once. First, <strong>key exchange</strong> — how do two strangers on the
-    internet agree on a shared secret without anyone intercepting it? And second,
-    <strong>data encryption</strong> — once they have that secret, how do they use it to protect
-    everything they say to each other? Post-quantum cryptography only touches the first one.
-    I'll come back to why that matters.
+    For most enterprise web applications, user PII travels through a common pattern: browser to CDN
+    edge, then CDN to origin. TLS terminates at each of those two points. They're separate encrypted
+    tunnels, not one end-to-end pipe. The organisation controls the configuration at both termination
+    points. That matters for what comes next.
   </p>
 
-  <div class="sequence-diagram">
-    <div class="seq-header">
-      <div class="seq-actor">
-        <div class="actor-name">🌐 Browser / Client</div>
-        <div class="actor-desc">Chrome, Firefox, Edge…</div>
-      </div>
-      <div></div>
-      <div class="seq-actor">
-        <div class="actor-name">🖥️ Web Server</div>
-        <div class="actor-desc">Cloudflare · F5 · Origin</div>
-      </div>
-    </div>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 860 310" xmlns="http://www.w3.org/2000/svg"
+         font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+      <defs>
+        <marker id="arr-g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3fb950"/></marker>
+        <marker id="arr-r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f85149"/></marker>
+        <marker id="arr-d" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6e7681"/></marker>
+      </defs>
 
-    <div class="step-list">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <div class="step-title">TCP Handshake <span style="color:var(--text-dim);font-weight:400;font-size:12px">— before TLS even starts</span></div>
-          <div class="step-body">SYN → SYN-ACK → ACK. A reliable transport connection is established. No encryption yet.</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <div class="step-title">Client Hello <span style="color:var(--blue);font-size:12px">→ Server</span></div>
-          <div class="step-body">
-            Browser sends: supported TLS versions, list of cipher suites it supports
-            (e.g. <code>TLS_AES_256_GCM_SHA384</code>), and its supported key agreement groups
-            (e.g. <code>x25519</code>, <code>P-256</code>). In TLS 1.3 it also sends a speculative
-            key share to avoid a round-trip.
-          </div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <div class="step-title">Server Hello + Certificate <span style="color:var(--blue);font-size:12px">← Server</span></div>
-          <div class="step-body">
-            Server picks a cipher suite, responds with its <strong>public key certificate</strong>
-            (RSA or ECDSA signed by a trusted CA). The certificate proves the server's identity.
-          </div>
-        </div>
-      </div>
-      <div class="step" style="background:rgba(248,81,73,0.04);border-radius:6px;padding:10px 10px 10px 0;">
-        <div class="step-num" style="background:rgba(248,81,73,0.15);color:var(--red);border-color:rgba(248,81,73,0.3);">4</div>
-        <div class="step-content">
-          <div class="step-title" style="color:var(--red);">Key Exchange — ⚠️ Quantum-Vulnerable Step</div>
-          <div class="step-body">
-            <strong style="color:var(--text);">RSA mode:</strong> Browser generates a random secret,
-            encrypts it with the server's public key, and sends the ciphertext. Only the server can
-            decrypt it with its private key.<br><br>
-            <strong style="color:var(--text);">ECDH mode</strong> (~70–80% of modern traffic):
-            Both sides contribute key material via Diffie-Hellman math. The shared secret is
-            <em>computed</em>, never transmitted. Either way — Shor's Algorithm on a quantum
-            computer breaks both by recovering the server's private key.
-          </div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <div class="step-title">Derive Session Keys</div>
-          <div class="step-body">
-            Both sides now hold the same shared secret. They independently run it through a key
-            derivation function (HKDF) to produce symmetric encryption keys. No key material
-            crosses the network in this step.
-          </div>
-        </div>
-      </div>
-      <div class="step" style="background:rgba(63,185,80,0.04);border-radius:6px;padding:10px 10px 10px 0;">
-        <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--green);border-color:rgba(63,185,80,0.3);">6</div>
-        <div class="step-content">
-          <div class="step-title" style="color:var(--green);">AES-256-GCM — ✅ Quantum-Safe</div>
-          <div class="step-body">
-            All HTTP traffic — GET requests, HTML, login forms, API calls — is now encrypted with
-            AES-256 using the derived session key. AES-256 is <strong>not vulnerable to quantum
-            computers</strong>. Grover's algorithm only halves the effective key length
-            (256 → 128 bits), which is still secure.
-          </div>
-        </div>
-      </div>
-    </div>
+      <!-- ── Nodes ── -->
+
+      <!-- Browser -->
+      <rect x="10" y="60" width="100" height="72" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+      <circle cx="60" cy="82" r="10" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <path d="M42 118 Q60 104 78 118" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <text x="60" y="134" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
+      <text x="60" y="147" text-anchor="middle" font-size="9" fill="#8b949e">User Device</text>
+
+      <!-- CDN -->
+      <rect x="230" y="48" width="130" height="96" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+      <text x="295" y="74" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="700">CDN Edge</text>
+      <text x="295" y="88" text-anchor="middle" font-size="9" fill="#8b949e">Cloudflare · Akamai</text>
+      <text x="295" y="100" text-anchor="middle" font-size="9" fill="#8b949e">Imperva · Fastly</text>
+      <rect x="248" y="112" width="94" height="18" rx="9" fill="rgba(248,81,73,0.1)" stroke="rgba(248,81,73,0.35)" stroke-width="1"/>
+      <text x="295" y="124" text-anchor="middle" font-size="8" fill="#f85149" font-weight="700">TLS TERMINATES HERE</text>
+
+      <!-- Origin / F5 -->
+      <rect x="530" y="48" width="130" height="96" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+      <text x="595" y="74" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="700">Origin / LTM</text>
+      <text x="595" y="88" text-anchor="middle" font-size="9" fill="#8b949e">F5 BIG-IP · NGINX</text>
+      <text x="595" y="100" text-anchor="middle" font-size="9" fill="#8b949e">HAProxy · AWS ALB</text>
+      <rect x="548" y="112" width="94" height="18" rx="9" fill="rgba(248,81,73,0.1)" stroke="rgba(248,81,73,0.35)" stroke-width="1"/>
+      <text x="595" y="124" text-anchor="middle" font-size="8" fill="#f85149" font-weight="700">TLS TERMINATES HERE</text>
+
+      <!-- Backend -->
+      <rect x="740" y="60" width="100" height="72" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+      <rect x="758" y="72" width="64" height="9" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <rect x="758" y="85" width="64" height="9" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <rect x="758" y="98" width="64" height="9" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
+      <text x="790" y="124" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Backend</text>
+      <text x="790" y="137" text-anchor="middle" font-size="9" fill="#8b949e">App / API</text>
+
+      <!-- ── TLS Leg 1 arrow ── -->
+      <line x1="112" y1="96" x2="228" y2="96" stroke="#f85149" stroke-width="2" marker-end="url(#arr-r)"/>
+
+      <!-- ── TLS Leg 2 arrow ── -->
+      <line x1="362" y1="96" x2="528" y2="96" stroke="#f85149" stroke-width="2" marker-end="url(#arr-r)"/>
+
+      <!-- ── Backend arrow ── -->
+      <line x1="662" y1="96" x2="738" y2="96" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-d)"/>
+
+      <!-- ── Internet badges on arrows ── -->
+      <!-- Leg 1 internet badge -->
+      <rect x="128" y="78" width="82" height="16" rx="8" fill="#0d1117" stroke="rgba(248,81,73,0.5)" stroke-width="1"/>
+      <text x="169" y="89" text-anchor="middle" font-size="8" fill="#f85149" font-weight="700">⚠ PUBLIC INTERNET</text>
+
+      <!-- Leg 2 internet badge -->
+      <rect x="378" y="78" width="132" height="16" rx="8" fill="#0d1117" stroke="rgba(248,81,73,0.5)" stroke-width="1"/>
+      <text x="444" y="89" text-anchor="middle" font-size="8" fill="#f85149" font-weight="700">⚠ PUBLIC / PRIVATE INTERNET</text>
+
+      <!-- Backend label -->
+      <text x="700" y="89" text-anchor="middle" font-size="8" fill="#6e7681">Internal</text>
+
+      <!-- ── TLS Leg labels below ── -->
+      <!-- Leg 1 box -->
+      <rect x="90" y="168" width="282" height="60" rx="6" fill="#0d1117" stroke="rgba(248,81,73,0.3)" stroke-width="1"/>
+      <text x="104" y="184" font-size="9" fill="#f85149" font-weight="700">TLS LEG 1 — Browser → CDN</text>
+      <text x="104" y="198" font-size="8.5" fill="#8b949e">• Crosses public internet — harvestable by nation-state / ISP tap</text>
+      <text x="104" y="211" font-size="8.5" fill="#8b949e">• Org controls CDN TLS config → PQC is achievable here</text>
+      <text x="104" y="224" font-size="8.5" fill="#3fb950">• Cloudflare: ML-KEM default on for TLS 1.3 zones</text>
+
+      <!-- Leg 1 connector -->
+      <line x1="169" y1="156" x2="169" y2="168" stroke="rgba(248,81,73,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Leg 2 box -->
+      <rect x="390" y="168" width="282" height="60" rx="6" fill="#0d1117" stroke="rgba(248,81,73,0.3)" stroke-width="1"/>
+      <text x="404" y="184" font-size="9" fill="#f85149" font-weight="700">TLS LEG 2 — CDN → Origin</text>
+      <text x="404" y="198" font-size="8.5" fill="#8b949e">• May cross internet (CDN PoP to origin datacenter)</text>
+      <text x="404" y="211" font-size="8.5" fill="#8b949e">• Org controls origin TLS config → PQC is achievable here</text>
+      <text x="404" y="224" font-size="8.5" fill="#d29922">• F5 BIG-IP: ML-KEM available from TMOS 17.5.1+</text>
+
+      <!-- Leg 2 connector -->
+      <line x1="444" y1="156" x2="444" y2="168" stroke="rgba(248,81,73,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- ── Org control bar ── -->
+      <rect x="90" y="244" width="582" height="26" rx="6" fill="rgba(63,185,80,0.06)" stroke="rgba(63,185,80,0.25)" stroke-width="1"/>
+      <text x="381" y="261" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">
+        ✓ Organisation controls TLS config at both termination points — both are candidates for PQC readiness
+      </text>
+    </svg>
   </div>
 
-  <div class="callout callout-yellow">
-    <strong>The thing that surprised me:</strong> Step 4 and Step 6 are completely separate problems,
-    and quantum computers only break Step 4. Your actual data in Step 6 is encrypted with AES-256 and
-    that's fine. Post-quantum cryptography replaces Step 4 only — the rest of TLS is untouched.
-    It's a targeted fix, not a rebuild from scratch.
-  </div>
-
-  <!-- ── RSA Math ──────────────────────────────────────────────────── -->
-  <h3 id="rsa-math">RSA: Security by Factoring Difficulty</h3>
+  <!-- ── What Can Be Harvested ────────────────────────────────────── -->
+  <h3 id="harvest-segments">Which Segments Can Be Harvested</h3>
   <p>
-    Here's the bit that made RSA click for me. The security isn't magic — it's a maths problem
-    that's easy in one direction and brutally hard in reverse. Pick two large prime numbers,
-    multiply them together, and you get <strong>n</strong>. That's fast. Trivially fast.
-    But if I hand you <strong>n</strong> and ask you to find the two primes I started with?
-    That's the problem that's kept RSA secure for decades. The table below shows how quickly
-    that difficulty scales.
+    An adversary capturing encrypted traffic doesn't need to be on your network. Both legs above
+    cross infrastructure outside your control, and that's where interception is possible.
   </p>
 
   <div class="card-grid">
-    <div class="card">
-      <h4>🔑 RSA Key Generation</h4>
+    <div class="card" style="border-color:rgba(248,81,73,0.3);">
+      <h4 style="color:var(--red);">Leg 1: Browser to CDN</h4>
       <p>
-        Pick two large primes <strong>p</strong> and <strong>q</strong>.<br>
-        Compute <strong>n = p × q</strong> — this is the public modulus.<br>
-        Publish <strong>n</strong> as part of the public key.<br>
-        Keep <strong>p</strong> and <strong>q</strong> secret forever.
+        This is always internet traffic. The encrypted TLS session carrying login credentials,
+        form data, API tokens. All of it traverses the public internet between the user's device
+        and the CDN edge. It can be captured at ISP level, transit points, or via BGP manipulation.
+        This is the highest-exposure segment.
       </p>
     </div>
-    <div class="card">
-      <h4>📐 Real RSA Scale</h4>
+    <div class="card" style="border-color:rgba(210,153,34,0.3);">
+      <h4 style="color:var(--yellow);">Leg 2: CDN to Origin</h4>
       <p>
-        RSA-2048: <strong>617 decimal digits</strong> in n.<br>
-        RSA-4096: <strong>1,234 decimal digits</strong>.<br>
-        p and q are each ~300–600 digits.<br>
-        Classical computers: <strong>millions of years to factor</strong>.
+        Depends on the architecture. If the CDN PoP and your origin are in different regions or
+        datacenters, this leg also crosses internet infrastructure, even if it uses a "private"
+        peering path. Traffic intercepted on this leg contains the same application data,
+        already decrypted and re-encrypted by the CDN.
       </p>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Number Size</th>
-          <th>Example</th>
-          <th>Classical Time to Factor</th>
-          <th>Quantum (Shor's)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td><strong>4 digits</strong></td><td>n = 3,599 (59 × 61)</td><td>Milliseconds</td><td>—</td></tr>
-        <tr><td><strong>10 digits</strong></td><td>n = 6,700,417 × …</td><td>Under a second</td><td>—</td></tr>
-        <tr><td><strong>20 digits</strong></td><td>~10²⁰</td><td>Seconds</td><td>—</td></tr>
-        <tr><td><strong>30 digits</strong></td><td>~10³⁰</td><td>Minutes to hours</td><td>—</td></tr>
-        <tr><td><strong>60+ digits</strong></td><td>~10⁶⁰</td><td>Years</td><td>—</td></tr>
-        <tr>
-          <td><strong>617 digits (RSA-2048)</strong></td>
-          <td>Real key size</td>
-          <td><span class="badge badge-green">Millions of years</span></td>
-          <td><span class="badge badge-red">Hours to days</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ── Quantum Threat ────────────────────────────────────────────── -->
-  <h3 id="quantum-threat">The Quantum Threat: Shor's Algorithm</h3>
-  <p>
-    So if factoring large numbers is the problem, what does a quantum computer do differently?
-    In 1994, a mathematician named Peter Shor figured out that quantum computers could solve
-    the factoring problem <strong>exponentially faster</strong> — not by trying harder, but by
-    exploiting three properties of quantum mechanics that have no equivalent in traditional computing.
-    I'm not a physicist, but here's how I think about each one.
-  </p>
-
-  <div class="card-grid-3">
-    <div class="card">
-      <h4>🔵 Superposition</h4>
-      <p>A qubit exists as 0 <em>and</em> 1 simultaneously until measured. Shor's algorithm
-      evaluates a function at <em>all</em> possible inputs at once, rather than one at a time.</p>
-    </div>
-    <div class="card">
-      <h4>🔗 Entanglement</h4>
-      <p>Qubits become linked — measuring one instantly determines entangled partners. Shor's
-      algorithm uses this to correlate results across the superposition.</p>
-    </div>
-    <div class="card">
-      <h4>〰️ Interference</h4>
-      <p>Quantum algorithms amplify correct answers and cancel wrong ones through phase
-      manipulation. The period — and thus the factors — emerges from this process.</p>
     </div>
   </div>
 
   <div class="callout callout-blue">
-    <strong>What actually breaks and what doesn't:</strong> RSA and ECDH both rely on mathematical
-    problems that Shor's algorithm dismantles — integer factorization and discrete logarithm
-    respectively. AES-256 is different. The best quantum attack against it (Grover's algorithm)
-    only halves the effective key length — 256 bits becomes 128 bits, still secure.
-    So your encrypted data isn't the concern. The key exchange is.
+    <strong>The part that is outside your control:</strong> This framing covers inbound traffic
+    to your published applications (the legs you configure). It does not cover outbound traffic
+    from inside your network to third-party SaaS, partner APIs, or cloud services. On those
+    sessions, the TLS configuration belongs to the destination. Whether they support ML-KEM
+    is their decision, not yours. That gap is covered in the
+    <a href="network.html#control" style="color:var(--blue);">Network Architecture section</a>.
   </div>
 
-  <div class="card" style="border-color:rgba(248,81,73,0.3);">
-    <h4 style="color:var(--red);">⚠️ Where we actually are in 2025</h4>
-    <p>
-      The largest number ever factored using Shor's Algorithm on real quantum hardware is <strong>~21</strong>.
-      To break RSA-2048, you'd need roughly <strong>4,000 logical qubits</strong> — which translates to
-      millions of physical qubits once you account for error correction. Most estimates put a
-      cryptographically capable quantum computer 15–20+ years away.<br><br>
-      So why are we talking about this now? Read on.
-    </p>
+  <!-- ── Why Key Exchange Is the Problem ──────────────────────────── -->
+  <h3 id="why-key-exchange">Why the Key Exchange Step Is the Vulnerability</h3>
+  <p>
+    TLS does two separate things: it establishes a shared secret between client and server
+    (key exchange), and it uses that secret to encrypt the actual data (AES-256). A quantum
+    computer only threatens the first step. AES-256 isn't meaningfully affected.
+  </p>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:rgba(248,81,73,0.2);">
+      <h4 style="color:var(--red);">Key Exchange</h4>
+      <p>
+        RSA and ECDH rely on mathematical problems that a sufficiently large quantum computer
+        can solve efficiently. This is the step where client and server agree on a shared secret
+        at the start of every TLS session.<br><br>
+        <span class="badge badge-red">Broken by quantum</span>
+      </p>
+    </div>
+    <div class="card" style="border-color:rgba(63,185,80,0.2);">
+      <h4 style="color:var(--green);">Data Encryption</h4>
+      <p>
+        Once the shared secret is established, all application data (form submissions, API
+        responses, session tokens) is encrypted with AES-256. Quantum computers don't provide
+        a meaningful attack against AES-256 at current key lengths.<br><br>
+        <span class="badge badge-green">Not a quantum problem</span>
+      </p>
+    </div>
   </div>
+
+  <p>
+    Post-quantum cryptography replaces the key exchange algorithm only. The rest of TLS,
+    the certificate, the cipher, the MAC. None of that changes. It's a targeted replacement,
+    not a rebuild.
+  </p>
 
   <!-- ── HNDL ──────────────────────────────────────────────────────── -->
   <h3 id="hndl">Harvest Now, Decrypt Later</h3>
   <p>
-    This is the part that shifted my thinking from "interesting future problem" to "we should be
-    doing something about this now." You don't need a quantum computer to start the attack.
-    You just need storage and patience — and nation-state actors have both.
+    The attack doesn't need a quantum computer to start. An adversary can capture and store
+    the encrypted TLS sessions on Leg 1 and Leg 2 today. The decryption happens later,
+    once a capable quantum computer exists. The window to protect against this is before
+    the capture happens, not after.
   </p>
 
   <div class="step-list">
@@ -263,37 +244,38 @@
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">1</div>
       <div class="step-content">
         <div class="step-title">Capture</div>
-        <div class="step-body">Adversary archives encrypted TLS sessions from internet taps, ISP access, or BGP hijacking. This is happening today.</div>
+        <div class="step-body">Encrypted TLS sessions on internet-facing segments are archived via ISP taps, transit interception, or BGP hijacking. The handshake data is what matters: it contains the key exchange.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">2</div>
       <div class="step-content">
         <div class="step-title">Store</div>
-        <div class="step-body">The ciphertext is kept. It contains the RSA or ECDH key exchange — all they need to later derive the session key.</div>
+        <div class="step-body">The ciphertext is kept. It contains the RSA or ECDH key exchange material, enough to derive the session key once the underlying math can be broken.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">3</div>
       <div class="step-content">
         <div class="step-title">Wait</div>
-        <div class="step-body">Adversary waits until a cryptographically capable quantum computer exists. Estimated: 2035–2040+.</div>
+        <div class="step-body">The adversary waits for a cryptographically capable quantum computer. Timeline is uncertain. Most estimates put this 15-20+ years out, but the range is wide.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">4</div>
       <div class="step-content">
         <div class="step-title">Decrypt</div>
-        <div class="step-body">Run Shor's Algorithm. Recover the session key. Decrypt the archived HTTPS traffic — login sessions, documents, financial data — retroactively.</div>
+        <div class="step-body">The quantum computer breaks the key exchange. Session keys are recovered. Traffic captured years earlier (login sessions, documents, API calls, health data) is decrypted retroactively.</div>
       </div>
     </div>
   </div>
 
   <div class="callout callout-red">
-    <strong>Ask yourself: what data are you protecting today that still needs to be secret in 2040?</strong>
-    Health records. M&amp;A conversations. Government communications. Trade secrets.
-    If the answer is anything, the migration clock is already running — because the capture
-    is already happening. The timeline to migrate to post-quantum is measured in years, not weeks.
+    <strong>The relevant question is not whether a quantum computer exists today.</strong>
+    It is: what PII are you transmitting right now that still needs to be secret in 15 years?
+    If the answer is anything: health records, financial data, authentication tokens,
+    M&amp;A conversations. The migration clock is already running, because the capture
+    is already possible. PQC readiness for the legs you control is where to start.
   </div>
 
   <div class="page-nav">
@@ -309,7 +291,7 @@
 
   <footer>
     <p>
-      Written by Ashish Gupta — a network security engineer working through PQC one verified step at a time.
+      Written by Ashish Gupta, a network security engineer working through PQC one verified step at a time.
       Sources:
       <a href="https://developers.cloudflare.com/ssl/post-quantum-cryptography/" target="_blank">Cloudflare PQC Docs</a> ·
       <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a> ·
@@ -320,13 +302,13 @@
 
 <script>
   const sections = document.querySelectorAll('h3[id]');
-  const navLinks = document.querySelectorAll('.sidebar a');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         navLinks.forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) link.classList.add('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
         });
       }
     });
