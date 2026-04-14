@@ -53,8 +53,8 @@
     <p class="subtitle">
       Knowing which algorithms are quantum-safe is only part of the work. The harder question is
       where in the network you can actually deploy them, and where you can't. This section covers
-      what I can control in my infrastructure, what I cannot, and how I verified what was actually
-      being negotiated.
+      what you can control in a standard enterprise stack, what you cannot, and how to verify what
+      is actually being negotiated.
     </p>
   </div>
 
@@ -200,7 +200,7 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>Cloudflare</strong><br><span style="color:var(--text-dim);font-size:11px;">Browser → CF Edge</span></td>
+          <td><strong>Cloudflare</strong><br><span style="color:var(--text-dim);font-size:11px;">Browser → CF Edge (External)</span></td>
           <td>Leg 1</td>
           <td><span class="badge badge-green">Default ON</span></td>
           <td>X25519MLKEM768 enabled for all TLS 1.3 zones. No configuration needed.</td>
@@ -254,8 +254,8 @@
   <!-- ── OpenSSL Setup ─────────────────────────────────────────────── -->
   <h3 id="openssl-setup">Getting OpenSSL 3.5+</h3>
   <p>
-    I'll save you an hour of frustration. When I first tried to verify ML-KEM negotiation from the
-    command line, I hit an error that looked like a server problem but was entirely a client problem.
+    Worth flagging upfront: a common error when verifying ML-KEM negotiation from the command line
+    looks like a server problem but is entirely a client problem.
     The <code>openssl s_client</code> command needs <strong>OpenSSL 3.5.0+</strong> to even know what
     <code>X25519MLKEM768</code> is. Older versions refuse with a hard error, and depending on your
     shell and OS, you might be running an older version than you think.

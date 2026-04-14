@@ -106,12 +106,14 @@
     <p>
       Post-quantum cryptography started showing up in vendor roadmaps and compliance conversations,
       and I realised I was nodding along without really understanding it. So I decided to learn it
-      properly. Not just the what, but the why and how it works on infrastructure I actually manage.
+      properly — not just the theory, but how it applies to the kind of infrastructure most enterprise
+      networks actually run.
     </p>
     <p>
-      This site documents what I found. Everything here has been tested and verified against real
-      infrastructure: Cloudflare, F5 BIG-IP, and a domain I can run <code>openssl s_client</code>
-      against. It's not the only way to understand this topic, but it's the one that worked for me.
+      This site documents what I found. Everything here has been tested and verified against a
+      standard enterprise stack: Cloudflare as the CDN edge, F5 BIG-IP as the origin load balancer,
+      and a real domain to run <code>openssl s_client</code> against. This is a common architecture —
+      CDN in front, load balancer at origin — not specific to any one organisation.
     </p>
     <div class="pill-row">
       <span class="pill pill-green">NIST FIPS 203 · ML-KEM</span>
@@ -121,6 +123,62 @@
       <span class="pill pill-yellow">Harvest Now, Decrypt Later</span>
       <span class="pill pill-purple">X25519MLKEM768</span>
     </div>
+  </div>
+
+  <!-- ── Where PII Gets Exposed ──────────────────────────────────── -->
+  <div id="harvest-where" style="margin-bottom:48px;padding-bottom:40px;border-bottom:1px solid var(--border);">
+
+    <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;">
+      Where Does PII Get Exposed — and Where Should We Focus?
+    </h2>
+
+    <p style="margin-bottom:14px;">
+      "Harvest now, decrypt later" is the phrase you hear in every PQC conversation. But the
+      more actionable question for a network engineer is: <strong>where</strong> exactly can
+      an adversary capture your traffic, and <strong>what</strong> are they capturing at each point?
+    </p>
+
+    <p style="margin-bottom:18px;">
+      When a user submits a login, a payment, or any sensitive form — that data travels across
+      <strong>two separate internet-exposed legs</strong> before it reaches your application:
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+      <div style="background:var(--surface);border:1px solid rgba(88,166,255,0.25);border-radius:8px;padding:16px 18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--blue);margin-bottom:6px;">Leg 1</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">Browser → CDN</div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0;line-height:1.55;">User's device to the CDN edge (Cloudflare), across the public internet. Anyone who can observe traffic between the user and the CDN can capture this leg.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(88,166,255,0.25);border-radius:8px;padding:16px 18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--blue);margin-bottom:6px;">Leg 2</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">CDN → Origin</div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0;line-height:1.55;">Cloudflare back across the internet to your origin — F5 BIG-IP or a cloud load balancer. A separate TLS session, separately vulnerable, and separately configurable.</p>
+      </div>
+    </div>
+
+    <p style="margin-bottom:20px;">
+      There is also a third exposure path: trusted external systems — partner APIs, SaaS platforms,
+      third-party integrations — communicating inbound to your origin directly over the internet,
+      bypassing the CDN entirely. The diagram below maps where each harvest opportunity sits.
+    </p>
+
+    <!-- Harvest points diagram -->
+    <div style="margin-bottom:24px;">
+      <img src="static/harvest-points.png"
+           alt="Network diagram showing harvest points across User → Cloudflare → F5/CloudFront traffic path"
+           style="width:100%;border-radius:10px;border:1px solid var(--border);">
+    </div>
+
+    <div class="callout callout-green">
+      <strong>Why hardening the CDN and origin layers closes most of the risk:</strong>
+      Both legs where PII crosses the internet — browser to CDN and CDN to origin — pass through
+      TLS termination points you control and can configure. Secure both legs with a quantum-resistant
+      key exchange (ML-KEM via TLS 1.3) and an adversary capturing everything in transit today
+      cannot decrypt it, even with a future quantum computer. You don't need to solve every
+      device or every endpoint at once. Close the two internet hops that carry PII, and you've
+      eliminated the harvest window that matters most.
+    </div>
+
   </div>
 
   <!-- Section Cards -->
@@ -180,8 +238,7 @@
   <div class="verified-box">
     <h3>✓ Verified against a Cloudflare-fronted domain (April 2026)</h3>
     <p>
-      The command below is how I confirmed ML-KEM is actually being negotiated in production,
-      not just theoretically supported. The key line to look for is
+      The command below confirms ML-KEM is actually being negotiated — not just theoretically supported. The key line to look for is
       <code>Negotiated TLS1.3 group: X25519MLKEM768</code>.
     </p>
     <p>
