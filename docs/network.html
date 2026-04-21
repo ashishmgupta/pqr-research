@@ -61,8 +61,7 @@
   <!-- ── What You Can Control ──────────────────────────────────────── -->
   <h3 id="control">What the Organisation Can and Cannot Control</h3>
   <p>
-    This is the question I kept coming back to after reading the NIST standards and vendor
-    announcements. ML-KEM is available. But available where, and to whom?
+    ML-KEM is available. The question is: available where, and to whom?
   </p>
   <p>
     The honest answer is: you can control your own TLS termination points. If your organisation
@@ -93,9 +92,9 @@
   <p>
     For traffic coming <em>into</em> the organisation (inbound HTTPS to your published services),
     there's no single TLS tunnel from the user's browser all the way to the backend. TLS terminates
-    and re-originates at each inspection or routing point. In my setup that means
-    <strong>two separate TLS legs</strong>, each independently configured, each with its own ML-KEM
-    status. Getting Leg 1 right does not automatically fix Leg 2.
+    and re-originates at each inspection or routing point. In a standard CDN plus load balancer setup,
+    that means <strong>two separate TLS legs</strong>, each independently configured, each with its
+    own ML-KEM status. Getting Leg 1 right does not automatically fix Leg 2.
   </p>
 
   <div class="diagram-wrap">
@@ -262,7 +261,7 @@
   </p>
 
   <div class="callout callout-red">
-    <strong>The error I hit:</strong><br>
+    <strong>The error:</strong><br>
     <code>Call to SSL_CONF_cmd(-groups, X25519MLKEM768:x25519) failed</code><br>
     <code>error:0A080106 ... group 'X25519MLKEM768' can't be set</code><br><br>
     The server is fine. The <code>openssl</code> binary in your PATH is too old or it's the wrong one.
@@ -281,8 +280,7 @@ openssl version</pre>
       <h4>Check available PQ groups</h4>
       <pre style="margin:8px 0 0;">openssl list -tls-groups | grep MLKEM</pre>
       <p style="margin-top:8px;"><strong>Note:</strong> <code>openssl list -groups</code> returns
-      nothing in OpenSSL 3.5. It's a different command. Always use <code>-tls-groups</code>.
-      I wasted time on this.</p>
+      nothing in OpenSSL 3.5. It's a different command. Always use <code>-tls-groups</code>.</p>
     </div>
   </div>
 
@@ -306,8 +304,8 @@ openssl list -tls-groups | grep MLKEM</pre>
     <p>
       Ubuntu ships OpenSSL 3.0.x, which is too old. You need to build 3.5.0 from source. The important
       thing is the <code>-Wl,-rpath</code> flag. Without it, the binary builds fine but fails at
-      runtime because it picks up the system's old libraries instead of its own. I hit that exact
-      error and it's confusing until you know why.
+      runtime because it picks up the system's old libraries instead of its own. That error is
+      confusing until you know why.
     </p>
     <pre style="margin:10px 0 0;"><span class="comment"># Install build dependencies</span>
 sudo apt install -y build-essential wget

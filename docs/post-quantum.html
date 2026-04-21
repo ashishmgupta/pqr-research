@@ -51,7 +51,7 @@
     <div class="eyebrow">Section 3 of 4</div>
     <h1>Post-Quantum Cryptography</h1>
     <p class="subtitle">
-      Once you understand what's broken, the next question is what replaces it — and more practically, whether it's actually deployed in a standard enterprise stack today.
+      Once you understand what's broken, the next question is what replaces it. More practically: is it actually deployed in a standard enterprise stack today?
       The short answer is: NIST finalized the standards in 2024, the key exchange algorithm
       (ML-KEM) is already shipping in Cloudflare and modern browsers, and it slots into TLS 1.3
       without changing anything else about the protocol.
@@ -169,7 +169,7 @@
   </div>
 
   <div class="callout callout-yellow">
-    <strong>One thing that tripped me up: HelloRetryRequest.</strong> If the client doesn't send
+    <strong>One detail worth understanding: HelloRetryRequest.</strong> If the client doesn't send
     the right key share upfront, the server fires back a <code>HelloRetryRequest</code> asking it
     to retry with the correct group. That's an extra round-trip. Cloudflare's default behaviour
     ("supported" mode) uses this approach. It works but adds latency. Setting Cloudflare to
@@ -182,10 +182,10 @@
   <p>
     When you see <code>X25519MLKEM768</code> in a TLS negotiation, that's a hybrid group
     identifier. It's ML-KEM-768 and the classical X25519 running simultaneously in the same handshake.
-    I genuinely appreciate this approach. ML-KEM is new. It went through eight years of global
-    scrutiny and came out clean, but it doesn't have the decades of real-world deployment that
-    X25519 has. Running both means an attacker would have to break both simultaneously to compromise
-    the session. If ML-KEM ever turns out to have an unexpected weakness, X25519 still holds.
+    The approach is deliberate. ML-KEM is new. It went through eight years of global scrutiny and
+    came out clean, but it doesn't have the decades of real-world deployment that X25519 has.
+    Running both means an attacker has to break both simultaneously to compromise the session.
+    If ML-KEM has an unexpected weakness, X25519 still holds.
     If a quantum computer eventually breaks X25519, ML-KEM still holds.
   </p>
 
