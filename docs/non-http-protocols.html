@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Non-HTTP Protocols and PII Risk — PQC Radar</title>
+  <link rel="stylesheet" href="static/style.css" />
+  <style>
+    .proto-section {
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .proto-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .proto-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 9px;
+      border-radius: 4px;
+    }
+    .proto-tag.red    { background: rgba(248,81,73,0.12); color: var(--red); }
+    .proto-tag.yellow { background: rgba(210,153,34,0.12); color: var(--yellow); }
+    .proto-tag.blue   { background: rgba(88,166,255,0.12); color: var(--blue); }
+
+    .fact-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .fact-row > div {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.55;
+    }
+    .fact-row > div:nth-child(odd) {
+      background: var(--surface);
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .fact-row > div:nth-last-child(1),
+    .fact-row > div:nth-last-child(2) { border-bottom: none; }
+    .fact-row > div:nth-child(even) { color: var(--text-muted); }
+
+    @media (max-width: 700px) {
+      .fact-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html">
+      <div class="radar-badge">PQC Radar</div>
+      <h1>Post-Quantum<br>Cryptography</h1>
+    </a>
+  </div>
+  <nav>
+    <a href="index.html" class="nav-home">🏠 Home</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="tls-rsa-handshake.html" class="nav-page">TLS 1.2 RSA Handshake</a>
+    <a href="tls-rsa-handshake.html#the-flow" class="nav-sub">The 8-Step Flow</a>
+    <a href="tls-rsa-handshake.html#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
+    <a href="tls-rsa-handshake.html#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
+
+    <a href="non-http-protocols.html" class="nav-page current">Non-HTTP Protocols</a>
+    <a href="#overview" class="nav-sub">Risk Overview</a>
+    <a href="#sftp-ssh" class="nav-sub">SFTP / SSH</a>
+    <a href="#ftps" class="nav-sub">FTPS</a>
+    <a href="#smtp" class="nav-sub">SMTP / Email</a>
+    <a href="#ldap" class="nav-sub">LDAPS</a>
+    <a href="#kerberos" class="nav-sub">Kerberos</a>
+    <a href="#ipsec" class="nav-sub">IPsec / IKEv2</a>
+    <a href="#database" class="nav-sub">Database TLS</a>
+    <a href="#sip" class="nav-sub">SIP / VoIP</a>
+    <a href="#grpc" class="nav-sub">gRPC</a>
+    <a href="#mqtt" class="nav-sub">MQTT</a>
+  </nav>
+</aside>
+
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Deep Dive</div>
+    <h1>Non-HTTP Protocols and PII Risk</h1>
+    <p class="subtitle">
+      The harvest-now-decrypt-later threat is not limited to HTTPS. Any protocol that uses RSA
+      or Diffie-Hellman for key exchange is subject to the same attack. Most enterprise environments
+      run dozens of non-HTTP protocols that carry PII, many of which receive far less security
+      attention than the web stack.
+    </p>
+  </div>
+
+  <!-- ── Risk Overview ─────────────────────────────────────────────── -->
+  <h3 id="overview">Risk Overview</h3>
+  <p>
+    The vulnerability is always in the same place: the key exchange step. When two systems
+    establish an encrypted session, they negotiate a shared secret. If that negotiation uses
+    RSA or classical Diffie-Hellman, the handshake can be captured today and decrypted later
+    once a quantum computer is available. The protocol above that layer (HTTP, FTP, SMTP, SQL)
+    is irrelevant. What matters is what happens in the handshake.
+  </p>
+
+  <div class="table-wrap" style="margin-bottom:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Protocol</th>
+          <th>PII Carried</th>
+          <th>Key Exchange</th>
+          <th>HNDL Risk</th>
+          <th>PQC Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>SFTP / SSH</strong></td>
+          <td>File payloads: HR, health, financial data</td>
+          <td>RSA / ECDH (custom SSH KEX)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>OpenSSH 9.0+ supports ML-KEM hybrid</td>
+        </tr>
+        <tr>
+          <td><strong>FTPS</strong></td>
+          <td>Batch file transfers, EDI, partner data</td>
+          <td>TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>Depends on TLS version of server</td>
+        </tr>
+        <tr>
+          <td><strong>SMTP / STARTTLS</strong></td>
+          <td>Email bodies, attachments</td>
+          <td>TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>No widely deployed PQC yet</td>
+        </tr>
+        <tr>
+          <td><strong>LDAPS</strong></td>
+          <td>Employee PII, credentials, org structure</td>
+          <td>TLS (RSA)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>Depends on AD / LDAP server TLS config</td>
+        </tr>
+        <tr>
+          <td><strong>Kerberos (PKINIT)</strong></td>
+          <td>Authentication tokens, identity</td>
+          <td>RSA (certificate-based)</td>
+          <td><span class="badge badge-yellow">Medium</span></td>
+          <td>Microsoft roadmap in progress</td>
+        </tr>
+        <tr>
+          <td><strong>IPsec / IKEv2</strong></td>
+          <td>All tunnelled traffic including PII</td>
+          <td>RSA / DH / ECDH (IKE)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>RFC 9370 (ML-KEM for IKEv2) published</td>
+        </tr>
+        <tr>
+          <td><strong>Database TLS</strong></td>
+          <td>Raw PII queries and responses</td>
+          <td>TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>Depends on DB engine TLS version</td>
+        </tr>
+        <tr>
+          <td><strong>SIP / SRTP</strong></td>
+          <td>Voice/video calls (HIPAA, financial)</td>
+          <td>DTLS / TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-yellow">Medium</span></td>
+          <td>No standard PQC path yet</td>
+        </tr>
+        <tr>
+          <td><strong>gRPC</strong></td>
+          <td>Internal microservice PII payloads</td>
+          <td>TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-yellow">Medium</span></td>
+          <td>Inherits from underlying TLS stack</td>
+        </tr>
+        <tr>
+          <td><strong>MQTT (TLS)</strong></td>
+          <td>IoT sensor data, healthcare device data</td>
+          <td>TLS (RSA or ECDH)</td>
+          <td><span class="badge badge-yellow">Medium</span></td>
+          <td>Inherits from underlying TLS stack</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── SFTP / SSH ─────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="sftp-ssh" style="margin:0;">SFTP / SSH</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      SFTP runs over SSH. The encryption is handled by SSH's own key exchange mechanism, which
+      is separate from TLS. SSH uses its own handshake protocol defined in RFC 4253. The key
+      exchange negotiation happens before any data is transmitted, and the algorithm used
+      determines whether the session is quantum-vulnerable.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Payroll exports, HR records, health data files, financial statements, partner EDI. SFTP is the standard transport for scheduled bulk PII transfers between organisations.</div>
+      <div>Key Exchange</div>
+      <div>SSH negotiates a KEX algorithm at connection time. Common algorithms: <code>diffie-hellman-group14-sha256</code>, <code>ecdh-sha2-nistp256</code>. Both are broken by Shor's algorithm. The negotiated algorithm is visible in the SSH handshake and can be captured.</div>
+      <div>HNDL Exposure</div>
+      <div>An adversary capturing the SSH handshake has the encrypted key exchange material. Once RSA or ECDH is broken, the session keys can be derived and all transferred file data decrypted.</div>
+      <div>PQC Path</div>
+      <div>OpenSSH 9.0+ (released 2022) supports <code>sntrup761x25519-sha512</code>, a hybrid post-quantum KEX algorithm. This is enabled by default in recent OpenSSH versions. Check your SSH server version and verify the negotiated algorithm with <code>ssh -vvv</code>.</div>
+    </div>
+
+    <div class="callout callout-blue">
+      <strong>Verify the negotiated algorithm:</strong>
+      <pre style="margin:8px 0 0;font-size:12px;">ssh -vvv user@host 2>&1 | grep "kex algos\|KEX"</pre>
+      Look for <code>sntrup761x25519-sha512</code> in the output. If you see only classical
+      algorithms, the server or client doesn't support PQC KEX or it's been disabled.
+    </div>
+  </div>
+
+  <!-- ── FTPS ──────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="ftps" style="margin:0;">FTPS</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      FTPS is FTP over TLS. It uses the same TLS handshake as HTTPS, which means it has exactly
+      the same quantum vulnerability. The key exchange step in the TLS handshake uses RSA or ECDH,
+      and that handshake data is capturable on any internet-facing FTPS server.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Batch file transfers between organisations: insurance claims, payroll data, patient records, EDI transactions. Often automated, often unmonitored.</div>
+      <div>Key Exchange</div>
+      <div>TLS handshake (same as HTTPS). If the FTPS server is running TLS 1.2 with RSA key exchange, the handshake is quantum-vulnerable. TLS 1.3 with ECDH is classically forward-secret but still not quantum-safe without ML-KEM.</div>
+      <div>HNDL Exposure</div>
+      <div>Same as HTTPS. The TLS handshake can be captured on the wire. The payload (the file being transferred) can be decrypted retroactively once the key exchange is broken.</div>
+      <div>PQC Path</div>
+      <div>Upgrade the FTPS server to TLS 1.3. Then enable ML-KEM if the server software supports it. Many FTPS servers run on older stacks (FileZilla Server, IIS FTP) and may not have TLS 1.3 support at all. Audit the minimum TLS version first.</div>
+    </div>
+  </div>
+
+  <!-- ── SMTP ──────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="smtp" style="margin:0;">SMTP / Email (STARTTLS)</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      SMTP between mail servers uses STARTTLS to upgrade a plaintext connection to TLS.
+      The TLS session established during STARTTLS uses the same RSA or ECDH key exchange
+      as any other TLS connection. The email body, attachments, and headers are all
+      encrypted within that session.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Email bodies and attachments: HR communications, patient correspondence, financial advice, legal documents, authentication codes, password resets. Email is one of the highest-volume PII carriers in any organisation.</div>
+      <div>Key Exchange</div>
+      <div>TLS via STARTTLS. Most mail servers still negotiate TLS 1.2. The key exchange is RSA or ECDH depending on the cipher suite. The handshake happens between mail servers (MTA-to-MTA), not between the user's client and the server.</div>
+      <div>HNDL Exposure</div>
+      <div>An adversary with visibility at an internet exchange point or ISP can capture MTA-to-MTA SMTP sessions. The TLS handshake is captured. Email content transmitted years ago can be decrypted once RSA is broken. Email is particularly attractive because the content has long-term value.</div>
+      <div>PQC Path</div>
+      <div>No widely deployed PQC for SMTP yet. NIST and IETF are working on standards. For now: enforce TLS 1.3 on MTA connections where possible, and use MTA-STS to prevent downgrade attacks. Monitor vendor roadmaps (Google, Microsoft) for ML-KEM support in mail infrastructure.</div>
+    </div>
+
+    <div class="callout callout-yellow">
+      <strong>STARTTLS vs SMTPS:</strong> SMTPS (port 465) wraps SMTP directly in TLS from
+      the start. STARTTLS (port 587 or 25) begins in plaintext and upgrades. Both end up in
+      a TLS session with the same key exchange vulnerability. The distinction matters for
+      downgrade attacks but not for the quantum threat.
+    </div>
+  </div>
+
+  <!-- ── LDAP ──────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="ldap" style="margin:0;">LDAPS (LDAP over TLS)</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      LDAP is the protocol used to query directory services: Active Directory, OpenLDAP, and
+      similar systems. LDAPS wraps LDAP in TLS on port 636. LDAP with STARTTLS on port 389
+      is also common. Both carry highly sensitive PII and authentication data.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Employee names, email addresses, phone numbers, job titles, department, manager hierarchy, group membership. Also authentication: password hashes (in some configurations), Kerberos tickets, NTLM hashes. LDAP queries reveal organisational structure in detail.</div>
+      <div>Key Exchange</div>
+      <div>TLS handshake over port 636. Most enterprise Active Directory deployments use TLS 1.2. The RSA certificate on the domain controller is used for key exchange. Capturing the LDAP session captures both the directory query and the response containing employee PII.</div>
+      <div>HNDL Exposure</div>
+      <div>An adversary capturing LDAPS sessions gains: the directory data (PII), the authentication exchanges, and potentially credential material. This is a high-value target because the data is structural and long-lived, not transactional.</div>
+      <div>PQC Path</div>
+      <div>Upgrade Active Directory domain controllers to support TLS 1.3. Windows Server 2022 supports TLS 1.3 for LDAPS. Microsoft's PQC roadmap for AD is in progress. Until ML-KEM is available in AD, enforce TLS 1.3 and strong ECDH cipher suites as an interim measure.</div>
+    </div>
+  </div>
+
+  <!-- ── Kerberos ───────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="kerberos" style="margin:0;">Kerberos (PKINIT)</h3>
+      <span class="proto-tag yellow">Medium Risk</span>
+    </div>
+    <p>
+      Kerberos is the default authentication protocol in Active Directory. In its basic form
+      it uses symmetric key cryptography (AES), which is not quantum-vulnerable. However,
+      PKINIT (Public Key Cryptography for Initial Authentication) is a Kerberos extension
+      that uses RSA certificates for the initial ticket exchange, and that part is vulnerable.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Authentication identity and authorisation data. Kerberos tickets encode the user's identity and group membership. Compromising ticket exchange exposes who authenticated, when, and to what resources.</div>
+      <div>Key Exchange</div>
+      <div>PKINIT uses RSA to encrypt the session key in the AS-REQ/AS-REP exchange. This is equivalent to TLS 1.2 RSA key exchange. The encrypted session key material is visible on the network and capturable. Standard Kerberos (without PKINIT) uses symmetric AES and is not quantum-vulnerable at this step.</div>
+      <div>HNDL Exposure</div>
+      <div>Limited compared to TLS protocols, because Kerberos tickets are short-lived and the data inside is primarily identity rather than business PII. However, authentication data captured today could be used to establish identity context for future attacks.</div>
+      <div>PQC Path</div>
+      <div>Microsoft has announced PQC support for Active Directory Kerberos as part of their post-quantum roadmap. No generally available release yet. This is a lower-urgency item than LDAPS or SMTP given that standard Kerberos without PKINIT is not RSA-dependent.</div>
+    </div>
+  </div>
+
+  <!-- ── IPsec ──────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="ipsec" style="margin:0;">IPsec / IKEv2 (VPN)</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      IPsec site-to-site VPNs carry all traffic between network segments, including every
+      protocol listed on this page. The quantum vulnerability is in IKEv2, the key exchange
+      protocol that establishes the IPsec Security Associations. If IKEv2 is broken, the
+      entire tunnel is decryptable.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Everything tunnelled through the VPN: SFTP, LDAP, database queries, internal HTTP, email relaying. IPsec is a transport-layer protection, so the PII depends on what runs inside the tunnel. In a typical site-to-site VPN, this includes all inter-site traffic.</div>
+      <div>Key Exchange</div>
+      <div>IKEv2 uses RSA certificates or pre-shared keys for authentication and Diffie-Hellman (DH groups 2, 14, or ECDH) for key exchange. The DH exchange in IKEv2 Phase 1 is exactly the step a quantum computer breaks. RFC 9370 defines ML-KEM key exchange for IKEv2.</div>
+      <div>HNDL Exposure</div>
+      <div>An adversary capturing encrypted IPsec traffic between two sites has the IKEv2 handshake and all the tunnelled data. If the IKE key exchange is broken, every session within the tunnel is decryptable. This is the highest-volume exposure: all inter-site PII in one capture target.</div>
+      <div>PQC Path</div>
+      <div>RFC 9370 (ML-KEM for IKEv2) was published in 2024. Support is appearing in major VPN vendors. Check your VPN platform (Cisco, Palo Alto, Fortinet, StrongSwan) for IKEv2 PQC support. StrongSwan added ML-KEM support in 2024. Cisco and Palo Alto have roadmap commitments.</div>
+    </div>
+
+    <div class="callout callout-blue">
+      <strong>Why IPsec is a priority target:</strong> A single captured IPsec session between
+      two datacenters can contain years of PII from every internal protocol. One harvest point,
+      maximum exposure. Upgrading IKEv2 to ML-KEM closes the quantum risk for everything inside
+      the tunnel simultaneously.
+    </div>
+  </div>
+
+  <!-- ── Database TLS ───────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="database" style="margin:0;">Database TLS (MySQL, PostgreSQL, MSSQL)</h3>
+      <span class="proto-tag red">High Risk</span>
+    </div>
+    <p>
+      Direct database connections from applications to database servers use TLS for encryption.
+      These sessions carry raw SQL queries and responses, which contain the actual PII stored
+      in the database, not a sanitised API response.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Raw database records: full names, DOB, SSN, health conditions, financial account data, authentication credentials. The application layer typically filters or transforms PII before exposing it via an API. The database connection sees it all.</div>
+      <div>Key Exchange</div>
+      <div>TLS handshake between the application server and the database server. MySQL, PostgreSQL, and MSSQL all support TLS, but default configurations vary. Many deployments run TLS 1.2 with RSA certificates. The key exchange is identical in structure to HTTPS.</div>
+      <div>HNDL Exposure</div>
+      <div>Capturing a database TLS session gives raw query results. A SELECT on a patient table returns every patient record in that query. This is the most direct path to PII in any application stack. Lateral movement within a network targeting database ports is a known attack pattern.</div>
+      <div>PQC Path</div>
+      <div>
+        Database TLS inherits PQC support from the underlying TLS library:
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.8;">
+          <li><strong>PostgreSQL:</strong> Uses OpenSSL. Supports TLS 1.3. ML-KEM available when compiled against OpenSSL 3.5+.</li>
+          <li><strong>MySQL / MariaDB:</strong> Uses OpenSSL or yaSSL. TLS 1.3 supported in MySQL 8.0+. ML-KEM roadmap in progress.</li>
+          <li><strong>MSSQL:</strong> Uses Schannel on Windows. Microsoft PQC for Schannel is in development as part of the broader Windows PQC rollout.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SIP / VoIP ─────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="sip" style="margin:0;">SIP / SRTP (VoIP)</h3>
+      <span class="proto-tag yellow">Medium Risk</span>
+    </div>
+    <p>
+      SIP (Session Initiation Protocol) establishes voice and video calls. The actual media
+      is encrypted with SRTP (Secure Real-time Transport Protocol). The key exchange for SRTP
+      typically happens via DTLS-SRTP, which uses DTLS (Datagram TLS) and inherits the same
+      RSA or ECDH vulnerability as TLS.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Voice and video content of calls: patient consultations (HIPAA), financial advisory calls (SEC record-keeping requirements), M&A discussions, legal privileged communications. Metadata is also sensitive: who called whom, when, for how long.</div>
+      <div>Key Exchange</div>
+      <div>DTLS-SRTP uses a DTLS handshake to exchange keys for SRTP media encryption. DTLS is TLS over UDP. The key exchange uses RSA or ECDH. Capturing the DTLS handshake captures the key material needed to decrypt the call audio once RSA is broken.</div>
+      <div>HNDL Exposure</div>
+      <div>Lower urgency than persistent data (files, database records) because call content has a shorter useful life. However, for high-value targets (executive calls, M&A, regulatory matters) the content may retain value for years. Metadata (who called whom) retains value indefinitely.</div>
+      <div>PQC Path</div>
+      <div>No widely deployed PQC standard for DTLS-SRTP yet. IETF is working on PQC for DTLS. Vendor support (Cisco, Zoom, Microsoft Teams) is in early roadmap stages. This is a medium-term item rather than immediate priority for most organisations.</div>
+    </div>
+  </div>
+
+  <!-- ── gRPC ───────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="grpc" style="margin:0;">gRPC (Internal Service Communication)</h3>
+      <span class="proto-tag yellow">Medium Risk</span>
+    </div>
+    <p>
+      gRPC is a high-performance RPC framework used for communication between microservices.
+      It runs over HTTP/2 with TLS. The quantum vulnerability is in the TLS handshake, which
+      is identical to any other TLS connection. The concern here is internal service-to-service
+      traffic that carries PII between components of an application.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Depends on the application. In a microservices architecture, gRPC calls between an auth service, a user profile service, and a payment service can carry full PII payloads. Internal traffic is often trusted more than external traffic but is equally visible to an internal adversary or network tap.</div>
+      <div>Key Exchange</div>
+      <div>TLS 1.2 or 1.3 depending on the gRPC server configuration. Many internal deployments use self-signed certificates and TLS 1.2 without careful cipher selection. The TLS handshake is the same as HTTPS and equally vulnerable.</div>
+      <div>HNDL Exposure</div>
+      <div>An adversary with access to internal network traffic (via a compromised host, a misconfigured mirror port, or a cloud VPC tap) can capture gRPC sessions. Internal traffic is often assumed safe and therefore monitored less carefully, making it a viable harvest target.</div>
+      <div>PQC Path</div>
+      <div>gRPC inherits PQC from the underlying TLS stack. If the application server and client are running a TLS library with ML-KEM support (OpenSSL 3.5+, BoringSSL with ML-KEM), gRPC will negotiate it automatically once configured. This is one of the easier protocols to upgrade because it follows TLS.</div>
+    </div>
+  </div>
+
+  <!-- ── MQTT ───────────────────────────────────────────────────────── -->
+  <div class="proto-section">
+    <div class="proto-header">
+      <h3 id="mqtt" style="margin:0;">MQTT over TLS (IoT)</h3>
+      <span class="proto-tag yellow">Medium Risk</span>
+    </div>
+    <p>
+      MQTT is a lightweight publish-subscribe messaging protocol used extensively in IoT.
+      When secured, it runs over TLS on port 8883. Healthcare IoT (patient monitors, wearables),
+      industrial IoT, and smart building systems use MQTT and often carry PII or operationally
+      sensitive data.
+    </p>
+
+    <div class="fact-row">
+      <div>PII Carried</div>
+      <div>Healthcare: patient vitals, device readings, medication pump data. Industrial: operational data that may identify individuals or processes. Building systems: occupancy, access control events. The PII exposure depends heavily on the deployment domain.</div>
+      <div>Key Exchange</div>
+      <div>TLS handshake on port 8883. MQTT brokers (Mosquitto, HiveMQ, AWS IoT Core) use TLS for transport security. The key exchange is RSA or ECDH depending on the broker configuration and the TLS version in use. IoT devices often have constrained TLS stacks running older cipher suites.</div>
+      <div>HNDL Exposure</div>
+      <div>IoT devices are long-lived. A medical device deployed today may still be in operation in 15 years, transmitting the same TLS sessions with the same cipher suites. This is one of the hardest environments to upgrade and one of the longest harvest windows.</div>
+      <div>PQC Path</div>
+      <div>Highly dependent on the IoT device. Constrained devices (microcontrollers) may not have the compute or memory for ML-KEM. Managed cloud IoT brokers (AWS IoT, Azure IoT Hub) will gain PQC support as their TLS stacks are updated. For existing deployments: prioritise by data sensitivity and device replaceability.</div>
+    </div>
+
+    <div class="callout callout-yellow">
+      <strong>The IoT upgrade problem:</strong> Unlike a server, an IoT device cannot always
+      be patched remotely. Some devices require physical replacement to change their TLS stack.
+      In healthcare, device replacement requires regulatory re-certification. The harvest window
+      for IoT MQTT traffic can extend well beyond the timeline for quantum computers to arrive.
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a href="network.html">
+      <span class="nav-label">← Previous</span>
+      <span class="nav-title">Network Architecture</span>
+    </a>
+  </div>
+
+  <footer>
+    <p>
+      Sources:
+      <a href="https://www.rfc-editor.org/rfc/rfc4253" target="_blank">RFC 4253 (SSH Transport)</a> ·
+      <a href="https://www.rfc-editor.org/rfc/rfc9370" target="_blank">RFC 9370 (ML-KEM for IKEv2)</a> ·
+      <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a>
+    </p>
+  </footer>
+</main>
+
+<script>
+  const sections = document.querySelectorAll('h3[id]');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
