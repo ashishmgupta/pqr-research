@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TLS 1.2 RSA Handshake — PQC Radar</title>
+  <link rel="stylesheet" href="static/style.css" />
+  <style>
+    .step-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 32px;
+    }
+    .step-table td {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    .step-table td:first-child {
+      width: 28px;
+      padding-right: 8px;
+    }
+    .step-table td:nth-child(2) {
+      width: 180px;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .step-table tr:last-child td { border-bottom: none; }
+    .step-table tr.vuln-row td { background: rgba(248,81,73,0.04); }
+    .step-table tr.vuln-row td:nth-child(2) { color: var(--red); }
+
+    .step-num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .step-num-badge.red { background: var(--red); }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html">
+      <div class="radar-badge">PQC Radar</div>
+      <h1>Post-Quantum<br>Cryptography</h1>
+    </a>
+  </div>
+  <nav>
+    <a href="index.html" class="nav-home">🏠 Home</a>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
+    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+    <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
+    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
+
+    <a href="tls-rsa-handshake.html" class="nav-page current">TLS 1.2 RSA Handshake</a>
+    <a href="#the-flow" class="nav-sub">The 8-Step Flow</a>
+    <a href="#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
+    <a href="#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html#control" class="nav-sub">What You Can Control</a>
+    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+    <a href="network.html#verify" class="nav-sub">Running the Test</a>
+  </nav>
+</aside>
+
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Deep Dive</div>
+    <h1>TLS 1.2 RSA Handshake</h1>
+    <p class="subtitle">
+      Understanding exactly how TLS 1.2 establishes a session makes the quantum vulnerability
+      concrete. The weak point isn't the encryption of your data. It's one specific step in the
+      handshake where a secret crosses the wire protected by RSA. That's what a quantum computer
+      breaks, and that's what ML-KEM replaces.
+    </p>
+  </div>
+
+  <!-- ── The Flow ──────────────────────────────────────────────────── -->
+  <h3 id="the-flow">The 8-Step Flow</h3>
+  <p>
+    Every TLS 1.2 session using RSA key exchange follows the same sequence. Steps 1 and 2 are
+    standard TCP setup. Steps 3 through 6 are the TLS handshake where the shared secret is
+    established. Steps 7 and 8 confirm the handshake and begin encrypted communication.
+  </p>
+
+  <div style="margin:24px 0 32px;">
+    <img src="static/tls-rsa-handshake.png"
+         alt="TLS 1.2 RSA Key Exchange Flow showing 8 steps from DNS resolution to secure communication"
+         style="width:100%;border-radius:10px;border:1px solid var(--border);">
+  </div>
+
+  <div class="table-wrap">
+    <table class="step-table">
+      <tbody>
+        <tr>
+          <td><span class="step-num-badge">1</span></td>
+          <td>DNS Resolution</td>
+          <td>Browser resolves the domain to an IP address. Standard DNS query and response. No TLS involved yet.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">2</span></td>
+          <td>TCP Handshake</td>
+          <td>Three-way TCP handshake: SYN, SYN-ACK, ACK. Establishes the transport connection. Still no encryption.</td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">3</span></td>
+          <td>Server Sends Certificate</td>
+          <td>
+            Server sends its TLS certificate to the browser. The certificate contains the server's
+            RSA public key. The browser verifies the certificate: checks the CA signature, validity
+            period, and domain match. If verification passes, the browser trusts that public key
+            belongs to the server.
+          </td>
+        </tr>
+        <tr class="vuln-row">
+          <td><span class="step-num-badge red">4</span></td>
+          <td>Browser Creates Pre-Master Secret</td>
+          <td>
+            Browser generates a random value called the Pre-Master Secret (PMS). It encrypts
+            the PMS using the server's RSA public key from the certificate, then sends the
+            encrypted PMS across the network. <strong style="color:var(--red);">This is the step
+            a quantum computer breaks.</strong> The encrypted PMS is visible to anyone capturing
+            the session. If the server's RSA private key is ever compromised or broken, the PMS
+            can be recovered and the entire session decrypted retroactively.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">5</span></td>
+          <td>Server Decrypts Pre-Master Secret</td>
+          <td>
+            Server uses its RSA private key to decrypt the PMS. Both sides now hold the same
+            Pre-Master Secret. No one else does, assuming RSA holds.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">6</span></td>
+          <td>Both Derive Session Keys</td>
+          <td>
+            Both sides independently run the same key derivation function using three inputs:
+            the Pre-Master Secret, a Client Random, and a Server Random. The randoms were
+            exchanged in plaintext during the ClientHello and ServerHello. The output is the
+            same symmetric session key on both sides, without it being transmitted directly.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">7</span></td>
+          <td>Exchange Finished Messages</td>
+          <td>
+            Both sides send a Finished message encrypted with the newly derived session key.
+            This confirms that the handshake completed correctly and that both sides derived
+            the same keys. Any tampering with handshake messages would cause this step to fail.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="step-num-badge">8</span></td>
+          <td>Secure Communication Begins</td>
+          <td>
+            All subsequent HTTP data is encrypted with AES using the session keys. This is the
+            symmetric encryption phase. Fast, efficient, and not threatened by quantum computers.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── The Vulnerability ─────────────────────────────────────────── -->
+  <h3 id="the-vulnerability">Where the Vulnerability Lives</h3>
+  <p>
+    Step 4 is the problem. The browser sends an encrypted Pre-Master Secret across the network.
+    That ciphertext is protected by the server's long-term RSA public key. The same key is used
+    for every session, for the entire lifetime of the certificate.
+  </p>
+  <p>
+    An adversary who captures the TLS handshake at Step 4 has everything needed to eventually
+    decrypt the session. They don't need to break it today. They store the captured ciphertext
+    and wait. When a sufficiently powerful quantum computer becomes available, they use Shor's
+    algorithm to factor the RSA key and recover the Pre-Master Secret. From there, deriving the
+    session keys is straightforward.
+  </p>
+
+  <div class="callout callout-red">
+    <strong>What makes this a harvest-now-decrypt-later target:</strong> The captured data doesn't
+    expire. A TLS session recorded today can be decrypted years later once the RSA key is broken.
+    Health records, financial transactions, authentication tokens transmitted over TLS 1.2 today
+    are candidates for retroactive decryption. The session itself ended years ago. The ciphertext
+    from Step 4 did not go away.
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:rgba(248,81,73,0.3);">
+      <h4 style="color:var(--red);">What an attacker captures</h4>
+      <ul style="margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--text-muted);line-height:1.7;">
+        <li>The encrypted Pre-Master Secret (Step 4)</li>
+        <li>The Client Random and Server Random (in plaintext)</li>
+        <li>The server's certificate and RSA public key</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;">
+        With these three elements and a quantum computer capable of breaking RSA, the full
+        session key derivation can be reproduced and all traffic decrypted.
+      </p>
+    </div>
+    <div class="card" style="border-color:rgba(63,185,80,0.2);">
+      <h4 style="color:var(--green);">What is not at risk</h4>
+      <ul style="margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--text-muted);line-height:1.7;">
+        <li>AES-256 session encryption (Step 8)</li>
+        <li>The server certificate itself (proves identity, not confidentiality)</li>
+        <li>SHA-256/384 used for MAC and integrity</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;">
+        Quantum computers do not provide a practical attack against AES-256 at current key
+        lengths. The data encryption step is not the problem.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── How TLS 1.3 Fixed It ──────────────────────────────────────── -->
+  <h3 id="vs-tls13">How TLS 1.3 Fixed This</h3>
+  <p>
+    TLS 1.3 removed RSA key exchange entirely. There is no Pre-Master Secret encrypted to a
+    long-term certificate key. The certificate is now used only for authentication: it signs
+    the handshake to prove the server's identity, but plays no role in establishing the secret.
+  </p>
+  <p>
+    Instead, both sides generate ephemeral key pairs for each session. They exchange public
+    halves, run a Diffie-Hellman calculation, and independently arrive at the same shared secret.
+    The secret is never transmitted. The ephemeral keys are discarded when the session ends.
+    There is nothing for an attacker to capture and hold for later decryption.
+  </p>
+
+  <div class="table-wrap" style="margin-bottom:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>TLS 1.2 (RSA)</th>
+          <th>TLS 1.3 (ECDHE / ML-KEM)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Session secret established by</strong></td>
+          <td>Browser encrypts PMS to server's long-term RSA public key</td>
+          <td>Both sides compute independently via ephemeral key exchange</td>
+        </tr>
+        <tr>
+          <td><strong>Secret transmitted?</strong></td>
+          <td><span class="badge badge-red">Yes. Encrypted PMS sent over the wire.</span></td>
+          <td><span class="badge badge-green">No. Never transmitted.</span></td>
+        </tr>
+        <tr>
+          <td><strong>Certificate role</strong></td>
+          <td>Key exchange and authentication</td>
+          <td>Authentication only</td>
+        </tr>
+        <tr>
+          <td><strong>Forward secrecy</strong></td>
+          <td><span class="badge badge-red">Not guaranteed</span></td>
+          <td><span class="badge badge-green">Always on</span></td>
+        </tr>
+        <tr>
+          <td><strong>Quantum vulnerable?</strong></td>
+          <td><span class="badge badge-red">Yes. RSA key exchange broken by Shor's algorithm.</span></td>
+          <td>With X25519 only: still exposed. With ML-KEM: protected.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>TLS 1.3 closes the harvest-now-decrypt-later window for classical attacks.</strong>
+    Ephemeral keys mean there is nothing persistent to break later. But TLS 1.3 with X25519
+    alone is still classically-secure, not quantum-secure. A quantum computer running Shor's
+    algorithm can break X25519 the same way it breaks RSA. ML-KEM is what closes that remaining gap.
+    See <a href="tls-versions.html" style="color:var(--blue);">TLS 1.2 vs TLS 1.3</a> and
+    <a href="post-quantum.html" style="color:var(--blue);">Post-Quantum Cryptography</a> for the full picture.
+  </div>
+
+  <!-- Key terms -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 26px;margin-top:32px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-dim);margin-bottom:14px;">Key Terms</div>
+    <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text-muted);line-height:1.9;">
+      <li><strong>Pre-Master Secret (PMS):</strong> A random value generated by the browser. The basis for deriving session keys in TLS 1.2.</li>
+      <li><strong>Encrypted Pre-Master Secret:</strong> The PMS encrypted with the server's RSA public key. Sent across the network in Step 4.</li>
+      <li><strong>Session Keys:</strong> Symmetric keys derived from PMS + Client Random + Server Random. Used to encrypt all HTTP data.</li>
+      <li><strong>Client Random / Server Random:</strong> Random values exchanged in plaintext during the hello messages. Combined with the PMS to produce unique session keys per session.</li>
+      <li><strong>Shor's Algorithm:</strong> A quantum algorithm that can factor large integers efficiently. Breaks RSA key exchange by recovering the private key from the public key.</li>
+      <li><strong>Forward Secrecy:</strong> A property where compromise of a long-term key does not expose past sessions. TLS 1.2 RSA does not have it. TLS 1.3 always does.</li>
+    </ul>
+  </div>
+
+  <div class="page-nav">
+    <a href="tls-versions.html">
+      <span class="nav-label">← Previous</span>
+      <span class="nav-title">TLS 1.2 vs TLS 1.3</span>
+    </a>
+    <a href="post-quantum.html" class="next">
+      <span class="nav-label">Next →</span>
+      <span class="nav-title">Post-Quantum Cryptography</span>
+    </a>
+  </div>
+
+  <footer>
+    <p>
+      Sources:
+      <a href="https://www.rfc-editor.org/rfc/rfc5246" target="_blank">RFC 5246 (TLS 1.2)</a> ·
+      <a href="https://www.rfc-editor.org/rfc/rfc8446" target="_blank">RFC 8446 (TLS 1.3)</a> ·
+      <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203 (ML-KEM)</a>
+    </p>
+  </footer>
+</main>
+
+<script>
+  const sections = document.querySelectorAll('h3[id]');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
