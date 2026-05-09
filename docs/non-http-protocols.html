@@ -60,9 +60,6 @@
       .fact-row { grid-template-columns: 1fr; }
     }
   </style>
-  <style>
-    .nav-sub-2 { padding-left: 28px !important; font-size: 11.5px !important; }
-  </style>
 </head>
 <body>
 
@@ -75,16 +72,12 @@
   <nav>
     <a href="index.html" class="nav-home">🏠 Home</a>
 
+    <div class="nav-section">Pre-Quantum State</div>
+
     <a href="tls-rsa-handshake.html" class="nav-page">TLS 1.2 RSA Handshake</a>
     <a href="tls-rsa-handshake.html#the-flow" class="nav-sub">The 8-Step Flow</a>
     <a href="tls-rsa-handshake.html#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
     <a href="tls-rsa-handshake.html#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
-
-    <a href="pre-quantum.html" class="nav-page">The Problem</a>
-    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
-    <a href="pre-quantum.html#harvest-segments" class="nav-sub">What Can Be Harvested</a>
-    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
-    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
 
     <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
     <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
@@ -92,14 +85,22 @@
     <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
     <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
     <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
-    <a href="tls-versions.html#detail" class="nav-sub">How Each Version Works</a>
 
-    <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+    <div class="nav-section">The Quantum Threat</div>
+
+    <a href="pre-quantum.html" class="nav-page">The Problem</a>
+    <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+    <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+    <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+
+    <div class="nav-section">Post-Quantum Readiness</div>
+
+    <a href="post-quantum.html" class="nav-page">Post-Quantum Cryptography</a>
     <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
     <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
     <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
 
-    <a href="network.html" class="nav-page">Network Architecture</a>
+    <a href="network.html" class="nav-page">Network Configuration</a>
     <a href="network.html#control" class="nav-sub">What You Can Control</a>
     <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
     <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
@@ -126,7 +127,7 @@
 
 <main>
   <div class="page-header">
-    <div class="eyebrow">Deep Dive</div>
+    <div class="eyebrow">Post-Quantum Readiness</div>
     <h1>Non-HTTP Protocols and PII Risk</h1>
     <p class="subtitle">
       The harvest-now-decrypt-later threat is not limited to HTTPS. Any protocol that uses RSA
@@ -548,7 +549,11 @@
   <div class="page-nav">
     <a href="network.html">
       <span class="nav-label">← Previous</span>
-      <span class="nav-title">Network Architecture</span>
+      <span class="nav-title">Network Configuration</span>
+    </a>
+    <a href="index.html" class="next">
+      <span class="nav-label">↑ Back to</span>
+      <span class="nav-title">Home</span>
     </a>
   </div>
 

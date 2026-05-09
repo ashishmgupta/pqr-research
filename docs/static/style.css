@@ -125,7 +125,7 @@ body {
   background: rgba(88,166,255,0.06);
 }
 
-/* Legacy fallback — keep for any stray .nav-section divs */
+/* Section group labels in nav */
 .nav-section {
   padding: 16px 20px 4px;
   font-size: 10px;
@@ -133,6 +133,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-dim);
+}
+
+/* Indented protocol sub-links (two levels deep) */
+.sidebar a.nav-sub-2 {
+  padding-left: 40px;
+  font-size: 11.5px;
 }
 
 /* ── Main content ────────────────────────────────────────────────── */
