@@ -129,23 +129,27 @@ body {
 .nav-group { }
 
 .nav-section {
-  padding: 16px 20px 6px;
-  font-size: 10px;
+  padding: 10px 16px 10px 20px;
+  margin-top: 6px;
+  font-size: 12.5px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
+  letter-spacing: 0.01em;
+  color: var(--text);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
   user-select: none;
-  transition: color 0.15s;
+  transition: background 0.15s;
 }
-.nav-section:hover { color: var(--text-muted); }
+.nav-section:hover { background: rgba(88,166,255,0.07); }
 .nav-section::after {
   content: '▾';
-  font-size: 9px;
+  font-size: 10px;
+  color: var(--text-dim);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
