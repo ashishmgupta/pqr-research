@@ -490,39 +490,12 @@
     Verify your client landscape before making this change.
   </div>
 
-  <!-- ── Detail section ───────────────────────────────────────────── -->
-  <div class="detail-section">
-    <div class="detail-label">If you want to understand why</div>
-
-    <h3 id="detail">TLS 1.2 Key Exchange</h3>
-    <p>
-      The server sends its certificate, which contains its public key. The browser generates
-      a random secret, encrypts it using that public key, and sends it across. The server
-      decrypts it with its private key. Both sides now hold the same secret and derive the
-      session keys from it.
-    </p>
-    <p>
-      The structural problem: the secret is protected by the server's long-term certificate
-      key, the same key used for every connection, for the lifetime of the certificate.
-      An adversary who captures the handshake today can store it and decrypt it retroactively
-      if they ever obtain or break that private key. That's the harvest now, decrypt later
-      window TLS 1.2 leaves open.
-    </p>
-
-    <h3>TLS 1.3 Key Exchange</h3>
-    <p>
-      The certificate's role changes entirely. In TLS 1.3 it's only used for authentication,
-      proving the server's identity by signing the handshake. It plays no part in establishing
-      the secret.
-    </p>
-    <p>
-      Instead, both sides generate temporary key pairs, fresh for this connection only.
-      They exchange public halves. Each side then runs the Diffie-Hellman calculation using
-      their own private half and the other side's public half, and both independently arrive
-      at the same shared secret. The secret was never transmitted. When the session ends,
-      the ephemeral keys are discarded. There's nothing for an attacker to reuse.
-      This is forward secrecy, and TLS 1.3 makes it mandatory on every connection.
-    </p>
+  <!-- ── Detail: pointer to RSA handshake page ───────────────────── -->
+  <div id="detail" class="callout callout-blue" style="margin-top:48px;">
+    <strong>How each version's key exchange actually works:</strong> The
+    <a href="tls-rsa-handshake.html" style="color:var(--blue);">TLS 1.2 RSA Handshake</a>
+    page walks through the full 8-step RSA handshake, identifies exactly where the
+    vulnerability lives in that flow, and shows how TLS 1.3's ephemeral key exchange closes it.
   </div>
 
   <div class="page-nav">

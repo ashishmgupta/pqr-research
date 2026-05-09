@@ -140,11 +140,10 @@
   <!-- ── Risk Overview ─────────────────────────────────────────────── -->
   <h3 id="overview">Risk Overview</h3>
   <p>
-    The vulnerability is always in the same place: the key exchange step. When two systems
-    establish an encrypted session, they negotiate a shared secret. If that negotiation uses
-    RSA or classical Diffie-Hellman, the handshake can be captured today and decrypted later
-    once a quantum computer is available. The protocol above that layer (HTTP, FTP, SMTP, SQL)
-    is irrelevant. What matters is what happens in the handshake.
+    The vulnerability is the same as in HTTPS: the key exchange step. The application protocol
+    (FTP, SMTP, SQL) is irrelevant — what matters is whether the handshake uses RSA or classical
+    Diffie-Hellman. If it does, the session can be harvested today and decrypted later.
+    For the full explanation see <a href="pre-quantum.html#hndl">Harvest Now, Decrypt Later</a>.
   </p>
 
   <div class="table-wrap" style="margin-bottom:32px;">
