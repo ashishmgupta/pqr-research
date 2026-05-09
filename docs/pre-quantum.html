@@ -17,56 +17,65 @@
   <nav>
     <a href="index.html" class="nav-home">🏠 Home</a>
 
-    <div class="nav-section">Pre-Quantum State</div>
+    <div class="nav-group">
+      <div class="nav-section">Pre-Quantum State</div>
+      <div class="nav-group-items">
+        <a href="tls-rsa-handshake.html" class="nav-page">TLS 1.2 RSA Handshake</a>
+        <a href="tls-rsa-handshake.html#the-flow" class="nav-sub">The 8-Step Flow</a>
+        <a href="tls-rsa-handshake.html#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
+        <a href="tls-rsa-handshake.html#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
 
-    <a href="tls-rsa-handshake.html" class="nav-page">TLS 1.2 RSA Handshake</a>
-    <a href="tls-rsa-handshake.html#the-flow" class="nav-sub">The 8-Step Flow</a>
-    <a href="tls-rsa-handshake.html#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
-    <a href="tls-rsa-handshake.html#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
+        <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+        <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+        <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+        <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can&#39;t Do ML-KEM</a>
+        <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+        <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
+      </div>
+    </div>
 
-    <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
-    <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
-    <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
-    <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can't Do ML-KEM</a>
-    <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
-    <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
+    <div class="nav-group">
+      <div class="nav-section">The Quantum Threat</div>
+      <div class="nav-group-items">
+        <a href="pre-quantum.html" class="nav-page current">The Problem</a>
+        <a href="#where-pii-flows" class="nav-sub">Where PII Flows</a>
+        <a href="#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+        <a href="#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+      </div>
+    </div>
 
-    <div class="nav-section">The Quantum Threat</div>
+    <div class="nav-group">
+      <div class="nav-section">Post-Quantum Readiness</div>
+      <div class="nav-group-items">
+        <a href="post-quantum.html" class="nav-page">Post-Quantum Cryptography</a>
+        <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+        <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+        <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
 
-    <a href="pre-quantum.html" class="nav-page current">The Problem</a>
-    <a href="#where-pii-flows" class="nav-sub">Where PII Flows</a>
-    <a href="#why-key-exchange" class="nav-sub">Why Key Exchange</a>
-    <a href="#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+        <a href="network.html" class="nav-page">Network Configuration</a>
+        <a href="network.html#control" class="nav-sub">What You Can Control</a>
+        <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+        <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+        <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+        <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+        <a href="network.html#verify" class="nav-sub">Running the Test</a>
 
-    <div class="nav-section">Post-Quantum Readiness</div>
-
-    <a href="post-quantum.html" class="nav-page">Post-Quantum Cryptography</a>
-    <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
-    <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
-    <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
-
-    <a href="network.html" class="nav-page">Network Configuration</a>
-    <a href="network.html#control" class="nav-sub">What You Can Control</a>
-    <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
-    <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
-    <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
-    <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
-    <a href="network.html#verify" class="nav-sub">Running the Test</a>
-
-    <a href="non-http-protocols.html" class="nav-page">Non-HTTP Protocols</a>
-    <a href="non-http-protocols.html#overview" class="nav-sub">Risk Overview</a>
-    <a href="non-http-protocols.html#external" class="nav-sub">External Connections</a>
-    <a href="non-http-protocols.html#sftp-ssh" class="nav-sub nav-sub-2">SFTP / SSH</a>
-    <a href="non-http-protocols.html#ftps" class="nav-sub nav-sub-2">FTPS</a>
-    <a href="non-http-protocols.html#smtp" class="nav-sub nav-sub-2">SMTP / Email</a>
-    <a href="non-http-protocols.html#internal" class="nav-sub">Internal Connections</a>
-    <a href="non-http-protocols.html#ldap" class="nav-sub nav-sub-2">LDAPS</a>
-    <a href="non-http-protocols.html#kerberos" class="nav-sub nav-sub-2">Kerberos</a>
-    <a href="non-http-protocols.html#ipsec" class="nav-sub nav-sub-2">IPsec / IKEv2</a>
-    <a href="non-http-protocols.html#database" class="nav-sub nav-sub-2">Database TLS</a>
-    <a href="non-http-protocols.html#sip" class="nav-sub nav-sub-2">SIP / VoIP</a>
-    <a href="non-http-protocols.html#grpc" class="nav-sub nav-sub-2">gRPC</a>
-    <a href="non-http-protocols.html#mqtt" class="nav-sub nav-sub-2">MQTT</a>
+        <a href="non-http-protocols.html" class="nav-page">Non-HTTP Protocols</a>
+        <a href="non-http-protocols.html#overview" class="nav-sub">Risk Overview</a>
+        <a href="non-http-protocols.html#external" class="nav-sub">External Connections</a>
+        <a href="non-http-protocols.html#sftp-ssh" class="nav-sub nav-sub-2">SFTP / SSH</a>
+        <a href="non-http-protocols.html#ftps" class="nav-sub nav-sub-2">FTPS</a>
+        <a href="non-http-protocols.html#smtp" class="nav-sub nav-sub-2">SMTP / Email</a>
+        <a href="non-http-protocols.html#internal" class="nav-sub">Internal Connections</a>
+        <a href="non-http-protocols.html#ldap" class="nav-sub nav-sub-2">LDAPS</a>
+        <a href="non-http-protocols.html#kerberos" class="nav-sub nav-sub-2">Kerberos</a>
+        <a href="non-http-protocols.html#ipsec" class="nav-sub nav-sub-2">IPsec / IKEv2</a>
+        <a href="non-http-protocols.html#database" class="nav-sub nav-sub-2">Database TLS</a>
+        <a href="non-http-protocols.html#sip" class="nav-sub nav-sub-2">SIP / VoIP</a>
+        <a href="non-http-protocols.html#grpc" class="nav-sub nav-sub-2">gRPC</a>
+        <a href="non-http-protocols.html#mqtt" class="nav-sub nav-sub-2">MQTT</a>
+      </div>
+    </div>
   </nav>
 </aside>
 
@@ -247,6 +256,19 @@
     });
   }, { rootMargin: '-20% 0px -70% 0px' });
   sections.forEach(s => observer.observe(s));
+
+  // Collapsible nav groups
+  (function () {
+    var isHome = document.querySelector('.nav-home.active');
+    document.querySelectorAll('.nav-group').forEach(function (group) {
+      if (!isHome && !group.querySelector('.nav-page.current')) {
+        group.classList.add('collapsed');
+      }
+      group.querySelector('.nav-section').addEventListener('click', function () {
+        group.classList.toggle('collapsed');
+      });
+    });
+  })();
 </script>
 </body>
 </html>
