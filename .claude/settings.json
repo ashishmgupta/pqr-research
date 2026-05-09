@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /c/ashish/code/pqr-research commit -m ' *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(ssh -vvv -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout=10\" test@sftp.lpl.com)",
+      "Bash(ssh-keyscan -p 22 -t rsa sftp.lpl.com)",
+      "Bash(nc -zv -w 5 sftp.lpl.com 22)",
+      "Bash(nc -zv -w 5 sftp.lpl.com 2022)",
+      "Bash(nc -zv -w 5 sftp.lpl.com 222)"
+    ]
+  }
+}

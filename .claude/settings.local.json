@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(openssl version:*)",
+      "Bash(openssl list:*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(openssl s_client -groups \"x25519\" -connect loginv2.lpl.com:443 -tls1_3 -brief)",
+      "Bash(openssl s_client -connect loginv2.lpl.com:443 -tls1_3 -groups \"X25519MLKEM768:x25519\" -brief)",
+      "Bash(bash \"c:/ashish/code/pqr-research/phase2-verification/verify_mlkem.sh\" loginv2.lpl.com)",
+      "WebFetch(domain:ashishmgupta.github.io)",
+      "Bash(python3 -c ':*)",
+      "Bash(git -C \"c:/ashish/code/pqr-research\" remote -v)",
+      "Bash(git -C /c/ashish/code/pqr-research remote -v)",
+      "Bash(git -C /c/ashish/code/pqr-research remote set-url origin https://github.com/ashishmgupta/pqr-research.git)",
+      "Bash(git -C /c/ashish/code/pqr-research push -u origin main)",
+      "Bash(git -C /c/ashish/code/pqr-research status --short)"
+    ]
+  }
+}
