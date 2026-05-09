@@ -113,34 +113,6 @@
     ✓ Organisation controls TLS config at both termination points. Both are candidates for PQC readiness.
   </div>
 
-  <!-- ── What Can Be Harvested ────────────────────────────────────── -->
-  <h3 id="harvest-segments">Which Segments Can Be Harvested</h3>
-  <p>
-    An adversary capturing encrypted traffic doesn't need to be on your network. Both legs above
-    cross infrastructure outside your control, and that's where interception is possible.
-  </p>
-
-  <div class="card-grid">
-    <div class="card" style="border-color:rgba(248,81,73,0.3);">
-      <h4 style="color:var(--red);">Leg 1: Browser to CDN</h4>
-      <p>
-        This is always internet traffic. The encrypted TLS session carrying login credentials,
-        form data, API tokens. All of it traverses the public internet between the user's device
-        and the CDN edge. It can be captured at ISP level, transit points, or via BGP manipulation.
-        This is the highest-exposure segment.
-      </p>
-    </div>
-    <div class="card" style="border-color:rgba(210,153,34,0.3);">
-      <h4 style="color:var(--yellow);">Leg 2: CDN to Origin</h4>
-      <p>
-        Depends on the architecture. If the CDN PoP and your origin are in different regions or
-        datacenters, this leg also crosses internet infrastructure, even if it uses a "private"
-        peering path. Traffic intercepted on this leg contains the same application data,
-        already decrypted and re-encrypted by the CDN.
-      </p>
-    </div>
-  </div>
-
   <div class="callout callout-blue">
     <strong>The part that is outside your control:</strong> This framing covers inbound traffic
     to your published applications (the legs you configure). It does not cover outbound traffic

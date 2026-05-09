@@ -149,34 +149,11 @@
       Where Does PII Get Exposed, and Where Should We Focus?
     </h2>
 
-    <p style="margin-bottom:14px;">
-      "Harvest now, decrypt later" is the phrase you hear in every PQC conversation. But the
-      more actionable question for a network engineer is: <strong>where</strong> exactly can
-      an adversary capture your traffic, and <strong>what</strong> are they capturing at each point?
-    </p>
-
-    <p style="margin-bottom:18px;">
-      When a user submits a login, a payment, or any sensitive form, that data travels across
-      <strong>two separate internet-exposed legs</strong> before it reaches your application:
-    </p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
-      <div style="background:var(--surface);border:1px solid rgba(88,166,255,0.25);border-radius:8px;padding:16px 18px;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--blue);margin-bottom:6px;">Leg 1</div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">Browser → CDN</div>
-        <p style="font-size:13px;color:var(--text-muted);margin:0;line-height:1.55;">User's device to the CDN edge (Cloudflare), across the public internet. Anyone who can observe traffic between the user and the CDN can capture this leg.</p>
-      </div>
-      <div style="background:var(--surface);border:1px solid rgba(88,166,255,0.25);border-radius:8px;padding:16px 18px;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--blue);margin-bottom:6px;">Leg 2</div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">CDN → Origin</div>
-        <p style="font-size:13px;color:var(--text-muted);margin:0;line-height:1.55;">Cloudflare back across the internet to your F5 BIG-IP or cloud load balancer. A separate TLS session, separately vulnerable, and separately configurable.</p>
-      </div>
-    </div>
-
     <p style="margin-bottom:20px;">
-      There is also a third exposure path: trusted external systems (partner APIs, SaaS platforms,
-      third-party integrations) communicating inbound to your origin directly over the internet,
-      bypassing the CDN entirely. The diagram below maps where each harvest opportunity sits.
+      PII travels across two separate internet-exposed TLS legs before it reaches your application:
+      browser to CDN, then CDN to origin. A third path exists for trusted external systems
+      (partner APIs, SaaS) that bypass the CDN entirely. The diagram below maps where each
+      harvest opportunity sits. Full breakdown in <a href="pre-quantum.html" style="color:var(--blue);">The Problem</a>.
     </p>
 
     <!-- Harvest points diagram -->
@@ -255,22 +232,11 @@
   <div class="verified-box">
     <h3>✓ Verified against a Cloudflare-fronted domain (April 2026)</h3>
     <p>
-      The command below confirms ML-KEM is actually being negotiated, not just theoretically supported. The key line to look for is
-      <code>Negotiated TLS1.3 group: X25519MLKEM768</code>.
+      ML-KEM is negotiated in practice, not just on paper. The key line to confirm:
+      <code>Negotiated TLS1.3 group: X25519MLKEM768</code>. Requires OpenSSL 3.5+.
+      See the <a href="network.html#verify" style="color:var(--blue);">full verification guide</a>
+      for the command and setup.
     </p>
-    <p>
-      Requires OpenSSL 3.5+. See the
-      <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL setup guide</a>
-      if you hit errors. Running in Git Bash on Windows or building from source on WSL are both covered.
-    </p>
-    <pre>LD_LIBRARY_PATH=/usr/local/openssl35/lib64 \
-  /usr/local/openssl35/bin/openssl s_client \
-  -connect &lt;your-cloudflare-domain&gt;:443 \
-  -tls1_3 -groups "X25519MLKEM768:x25519" \
-  -CAfile /etc/ssl/certs/ca-certificates.crt \
-  -brief
-
-<span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>  ← this is what you want to see</pre>
   </div>
 
   <footer>
