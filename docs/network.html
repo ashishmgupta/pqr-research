@@ -463,11 +463,8 @@ openssl35 version   <span class="comment"># should show OpenSSL 3.5.0</span></pr
 
   // ── Collapsible nav groups ────────────────────────────────────────
   (function () {
-    var isHome = document.querySelector('.nav-home.active');
     document.querySelectorAll('.nav-group').forEach(function (group) {
-      if (!isHome && !group.querySelector('.nav-page.current')) {
-        group.classList.add('collapsed');
-      }
+      group.classList.add('collapsed');
       group.querySelector('.nav-section').addEventListener('click', function () {
         group.classList.toggle('collapsed');
       });
