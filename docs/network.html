@@ -131,96 +131,10 @@
     own ML-KEM status. Getting Leg 1 right does not automatically fix Leg 2.
   </p>
 
-  <div class="diagram-wrap">
-    <svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
-      <defs>
-        <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#3fb950"/>
-        </marker>
-        <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
-        </marker>
-        <marker id="arr-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
-        </marker>
-        <marker id="arr-dim" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#6e7681"/>
-        </marker>
-      </defs>
-
-      <line x1="0" y1="110" x2="860" y2="110" stroke="#21262d" stroke-width="1" stroke-dasharray="4,6"/>
-
-      <!-- Browser -->
-      <rect x="10" y="70" width="100" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
-      <circle cx="60" cy="92" r="10" fill="none" stroke="#58a6ff" stroke-width="2"/>
-      <path d="M40 130 Q60 112 80 130" fill="none" stroke="#58a6ff" stroke-width="2"/>
-      <text x="60" y="146" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
-      <text x="60" y="158" text-anchor="middle" font-size="9" fill="#8b949e">User Device</text>
-
-      <!-- TLS Leg 1 -->
-      <line x1="112" y1="110" x2="205" y2="110" stroke="#3fb950" stroke-width="2" marker-end="url(#arr-green)"/>
-      <rect x="118" y="75" width="84" height="28" rx="4" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
-      <text x="160" y="87" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">TLS LEG 1</text>
-      <text x="160" y="98" text-anchor="middle" font-size="8" fill="#7ee787">TLS 1.3 + ML-KEM</text>
-
-      <!-- Cloudflare -->
-      <rect x="207" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
-      <ellipse cx="271" cy="88" rx="28" ry="14" fill="none" stroke="#f6821f" stroke-width="2"/>
-      <ellipse cx="255" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
-      <ellipse cx="287" cy="92" rx="16" ry="10" fill="#161b22" stroke="#f6821f" stroke-width="2"/>
-      <rect x="248" y="88" width="46" height="14" fill="#161b22"/>
-      <text x="271" y="112" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="700">Cloudflare</text>
-      <text x="271" y="124" text-anchor="middle" font-size="9" fill="#f6821f">WAF &amp; CDN</text>
-      <rect x="225" y="133" width="92" height="18" rx="9" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.4)" stroke-width="1"/>
-      <text x="271" y="145" text-anchor="middle" font-size="8" fill="#3fb950" font-weight="700">✓ ML-KEM DEFAULT</text>
-
-      <!-- Internet gap -->
-      <line x1="337" y1="110" x2="390" y2="110" stroke="#30363d" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-muted)"/>
-      <text x="364" y="100" text-anchor="middle" font-size="8" fill="#6e7681">Internet</text>
-
-      <!-- TLS Leg 2 -->
-      <line x1="393" y1="110" x2="486" y2="110" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr-blue)"/>
-      <rect x="399" y="75" width="84" height="28" rx="4" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
-      <text x="441" y="87" text-anchor="middle" font-size="9" fill="#58a6ff" font-weight="700">TLS LEG 2</text>
-      <text x="441" y="98" text-anchor="middle" font-size="8" fill="#a5c8ff">TLS 1.3 + ML-KEM</text>
-
-      <!-- F5 -->
-      <rect x="488" y="56" width="128" height="108" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
-      <rect x="528" y="70" width="40" height="30" rx="4" fill="rgba(229,0,18,0.1)" stroke="#e50012" stroke-width="2"/>
-      <text x="548" y="90" text-anchor="middle" font-size="16" fill="#e50012" font-weight="900">F5</text>
-      <text x="552" y="114" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="700">F5 VIP</text>
-      <text x="552" y="126" text-anchor="middle" font-size="9" fill="#8b949e">BIG-IP LTM</text>
-      <rect x="506" y="133" width="104" height="18" rx="9" fill="rgba(210,153,34,0.1)" stroke="rgba(210,153,34,0.4)" stroke-width="1"/>
-      <text x="558" y="145" text-anchor="middle" font-size="8" fill="#d29922" font-weight="700">⚠ TMOS 17.5.1+ REQ</text>
-
-      <!-- Backend -->
-      <line x1="618" y1="110" x2="698" y2="110" stroke="#6e7681" stroke-width="1.5" marker-end="url(#arr-dim)"/>
-      <text x="658" y="100" text-anchor="middle" font-size="8" fill="#6e7681">HTTP/S</text>
-      <rect x="700" y="70" width="110" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
-      <rect x="725" y="83" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-      <rect x="725" y="97" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-      <rect x="725" y="111" width="60" height="10" rx="2" fill="none" stroke="#6e7681" stroke-width="1.5"/>
-      <text x="755" y="134" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Backend</text>
-      <text x="755" y="146" text-anchor="middle" font-size="9" fill="#8b949e">App Servers</text>
-
-      <!-- Annotations -->
-      <rect x="112" y="175" width="223" height="72" rx="6" fill="#0d2b0f" stroke="#3fb950" stroke-width="1"/>
-      <text x="124" y="192" font-size="9" fill="#7ee787" font-weight="700">LEG 1 — Browser → Cloudflare</text>
-      <text x="124" y="207" font-size="8.5" fill="#8b949e">• ML-KEM on by default (TLS 1.3 zones)</text>
-      <text x="124" y="219" font-size="8.5" fill="#8b949e">• X25519MLKEM768 negotiated automatically</text>
-      <text x="124" y="231" font-size="8.5" fill="#8b949e">• Verify: pq.cloudflareresearch.com</text>
-      <text x="124" y="243" font-size="8.5" fill="#8b949e">• ~43% of CF traffic already PQ (Sept 2025)</text>
-
-      <rect x="393" y="175" width="223" height="72" rx="6" fill="#0c1b33" stroke="#58a6ff" stroke-width="1"/>
-      <text x="405" y="192" font-size="9" fill="#a5c8ff" font-weight="700">LEG 2 — Cloudflare → F5 VIP</text>
-      <text x="405" y="207" font-size="8.5" fill="#8b949e">• Requires TMOS 17.5.1+ (June 2025)</text>
-      <text x="405" y="219" font-size="8.5" fill="#8b949e">• Client SSL Profile: SecP256r1ML-KEM-768</text>
-      <text x="405" y="231" font-size="8.5" fill="#8b949e">• Set CF origin to "preferred" via API</text>
-      <text x="405" y="243" font-size="8.5" fill="#8b949e">• TLS 1.3 must be enabled (not 1.2)</text>
-
-      <line x1="223" y1="164" x2="223" y2="175" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="504" y1="164" x2="504" y2="175" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,3"/>
-    </svg>
+  <div style="margin-bottom:20px;">
+    <img src="static/flow-with-legs.png"
+         alt="Network diagram showing Browser → Cloudflare (TLS Leg 1) → F5 VIP (TLS Leg 2) → Backend with ML-KEM details"
+         style="width:100%;border-radius:10px;border:1px solid var(--border);">
   </div>
 
   <!-- ── Vendor Status ─────────────────────────────────────────────── -->
