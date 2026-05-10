@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
+<button id="menu-toggle" aria-label="Open navigation">☰</button>
+<div id="sidebar-overlay"></div>
+
 
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -273,7 +276,7 @@
   }, { rootMargin: '-20% 0px -70% 0px' });
   sections.forEach(s => observer.observe(s));
 
-  // Collapsible nav groups
+  // ── Collapsible nav groups ────────────────────────────────────────
   (function () {
     var isHome = document.querySelector('.nav-home.active');
     document.querySelectorAll('.nav-group').forEach(function (group) {
@@ -284,6 +287,20 @@
         group.classList.toggle('collapsed');
       });
     });
+
+    // ── Mobile sidebar toggle ───────────────────────────────────────
+    var btn     = document.getElementById('menu-toggle');
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    function openNav()  { sidebar.classList.add('open'); overlay.classList.add('open'); }
+    function closeNav() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+    if (btn) {
+      btn.addEventListener('click', function () {
+        sidebar.classList.contains('open') ? closeNav() : openNav();
+      });
+      overlay.addEventListener('click', closeNav);
+      sidebar.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeNav); });
+    }
   })();
 </script>
 </body>

@@ -401,10 +401,41 @@ footer {
 }
 footer a { color: var(--blue); text-decoration: none; }
 
+/* ── Mobile hamburger ────────────────────────────────────────────── */
+#menu-toggle {
+  display: none;
+  position: fixed;
+  top: 12px; left: 12px;
+  z-index: 200;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 11px;
+  cursor: pointer;
+}
+
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 99;
+}
+#sidebar-overlay.open { display: block; }
+
 /* ── Responsive ──────────────────────────────────────────────────── */
+.sidebar { transition: transform 0.25s ease; }
+
 @media (max-width: 800px) {
-  .sidebar { display: none; }
-  main { margin-left: 0; padding: 24px; }
+  #menu-toggle { display: block; }
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+  main { margin-left: 0; padding: 24px; padding-top: 56px; }
   .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
   .page-nav { flex-direction: column; }
   .page-nav .next { margin-left: 0; text-align: left; }
