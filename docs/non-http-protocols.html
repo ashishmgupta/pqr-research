@@ -597,7 +597,9 @@
   // ── Collapsible nav groups ────────────────────────────────────────
   (function () {
     document.querySelectorAll('.nav-group').forEach(function (group) {
-      group.classList.add('collapsed');
+      if (!group.querySelector('.nav-page.current')) {
+        group.classList.add('collapsed');
+      }
       group.querySelector('.nav-section').addEventListener('click', function () {
         group.classList.toggle('collapsed');
       });
