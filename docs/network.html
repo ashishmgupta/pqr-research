@@ -115,12 +115,10 @@
 
   <div class="callout callout-yellow">
     <strong>The gap that is harder to close:</strong> Outbound proxy inspection is exactly where
-    this gets complicated. A proxy like Netskope or Zscaler intercepts and re-encrypts outbound
-    TLS, which means it's also the TLS client for the leg connecting to the destination. If that
-    proxy doesn't support ML-KEM on its outbound leg, every session it inspects is classically
-    encrypted to the destination, regardless of what the user's device would have negotiated
-    directly. As of April 2026, Netskope's ML-KEM support for outbound proxy legs is still
-    in their roadmap and isn't yet available.
+    this gets complicated. An outbound proxy intercepts and re-encrypts outbound TLS, which means
+    it's also the TLS client for the leg connecting to the destination. If that proxy doesn't
+    support ML-KEM on its outbound leg, every session it inspects is classically encrypted to the
+    destination, regardless of what the user's device would have negotiated directly.
   </div>
 
   <!-- ── TLS Termination Points ────────────────────────────────────── -->
@@ -251,12 +249,6 @@
           <td>Leg 2 (F5 side)</td>
           <td><span class="badge badge-yellow">Requires 17.5.1+</span></td>
           <td>TMOS 17.5.1 (June 2025) minimum. Cipher: <code>SecP256r1ML-KEM-768</code>. TLS 1.3 must be enabled.</td>
-        </tr>
-        <tr>
-          <td><strong>Netskope</strong><br><span style="color:var(--text-dim);font-size:11px;">Outbound proxy</span></td>
-          <td>Outbound</td>
-          <td><span class="badge badge-red">Not Yet Available</span></td>
-          <td>Proxy inspection legs (Phase 2 of their roadmap) not yet ML-KEM capable. Gap: outbound HTTPS inspection is not post-quantum protected.</td>
         </tr>
       </tbody>
     </table>
