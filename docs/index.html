@@ -22,7 +22,7 @@
     }
     .hero p { font-size: 15.5px; max-width: 640px; margin-bottom: 14px; }
 
-    .section-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 48px; }
+    .section-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 48px; }
 
     .section-card {
       background: var(--surface); border: 1px solid var(--border);
@@ -197,52 +197,40 @@
   <!-- Section Cards -->
   <div class="section-cards">
 
-    <a href="pre-quantum.html" class="section-card">
-      <div class="card-eyebrow">Start here</div>
-      <div class="card-icon">🔐</div>
-      <h3>The Problem</h3>
+    <a href="tls-rsa-handshake.html" class="section-card">
+      <div class="card-eyebrow">Part 1</div>
+      <div class="card-icon">🌐</div>
+      <h3>Pre-Quantum State</h3>
       <p>
-        What actually happens in a TLS handshake, which part of it quantum computers break,
-        and why the attack doesn't need a quantum computer to start. The harvest now,
-        decrypt later threat is the reason this is worth paying attention to now.
+        How encryption on your network works today. The TLS handshake step by step, what RSA
+        is actually doing, and why TLS 1.3 changed the architecture. This is the baseline —
+        what you have now, before any of this becomes a problem.
       </p>
-      <div class="card-link">Read → The Problem</div>
+      <div class="card-link">Read → Pre-Quantum State</div>
     </a>
 
-    <a href="tls-versions.html" class="section-card">
-      <div class="card-eyebrow">The bridge</div>
-      <div class="card-icon">🔄</div>
-      <h3>TLS 1.2 vs TLS 1.3</h3>
+    <a href="pre-quantum.html" class="section-card">
+      <div class="card-eyebrow">Part 2</div>
+      <div class="card-icon">⚠️</div>
+      <h3>The Quantum Threat</h3>
       <p>
-        Why the TLS version actually matters here. TLS 1.3 made the key exchange pluggable.
-        That's the architectural reason ML-KEM can exist at all. TLS 1.2 simply has no slot
-        for it. And TLS 1.3 alone, without ML-KEM, still leaves you exposed.
+        Why this is worth acting on now, even though quantum computers don't exist yet.
+        An adversary can record your encrypted traffic today and hold it until they can
+        decrypt it. The window to protect against this is before the capture happens.
       </p>
-      <div class="card-link">Read → TLS Version Comparison</div>
+      <div class="card-link">Read → The Quantum Threat</div>
     </a>
 
     <a href="post-quantum.html" class="section-card">
-      <div class="card-eyebrow">The replacement</div>
+      <div class="card-eyebrow">Part 3</div>
       <div class="card-icon">🛡️</div>
-      <h3>Post-Quantum Crypto</h3>
+      <h3>Post-Quantum Readiness</h3>
       <p>
-        NIST finalised three algorithms in 2024. ML-KEM is the one that matters for TLS key
-        exchange and it's already shipping in Cloudflare and modern browsers. This section
-        covers what it is, which parameter set is in active use, and how it fits into TLS 1.3.
+        The replacement is already here. ML-KEM is live in Cloudflare and modern browsers
+        today. This section covers the new algorithms, how to configure your stack, and
+        how to verify what is actually being negotiated end to end.
       </p>
-      <div class="card-link">Read → Post-Quantum Fundamentals</div>
-    </a>
-
-    <a href="network.html" class="section-card">
-      <div class="card-eyebrow">Where it lands</div>
-      <div class="card-icon">🏗️</div>
-      <h3>Network Architecture &amp; Verification</h3>
-      <p>
-        Knowing which algorithms are quantum-safe is the easy part. The harder question is where
-        you can actually deploy them, and where you can't. What the org controls vs what depends
-        on vendor roadmaps, plus how to verify what is actually being negotiated.
-      </p>
-      <div class="card-link">Read → Network Architecture</div>
+      <div class="card-link">Read → Post-Quantum Readiness</div>
     </a>
 
   </div>
