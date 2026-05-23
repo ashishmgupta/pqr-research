@@ -267,11 +267,16 @@ ICMP      — ping (optional but useful)</pre>
         <div class="step-body">
           BIG-IP PAYG instances use the EC2 instance ID as the initial admin password.
           SSH in and change it immediately:
-          <pre style="margin-top:8px;">ssh -i your-key.pem admin@&lt;PUBLIC-IP&gt;
+          <pre style="margin-top:8px;">ssh -i F5.pem admin@&lt;PUBLIC-IP&gt;
 
 # At the BIG-IP tmsh prompt:
 modify auth user admin password &lt;NEW-PASSWORD&gt;
 save sys config</pre>
+          <div class="callout callout-yellow" style="margin-top:10px;">
+            <strong>Windows key permission error?</strong> If SSH complains that your
+            <code>.pem</code> file is too open (permissions 0555), fix it in PowerShell:<br>
+            <code>icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</code>
+          </div>
         </div>
       </div>
     </div>
