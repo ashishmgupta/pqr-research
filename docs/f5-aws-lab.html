@@ -273,9 +273,13 @@ ICMP      — ping (optional but useful)</pre>
 modify auth user admin password &lt;NEW-PASSWORD&gt;
 save sys config</pre>
           <div class="callout callout-yellow" style="margin-top:10px;">
-            <strong>Windows key permission error?</strong> If SSH complains that your
-            <code>.pem</code> file is too open (permissions 0555), fix it in PowerShell:<br>
-            <code>icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</code>
+            <strong>Permissions error?</strong> If SSH complains the key is too open (permissions 0555),
+            restrict it before connecting:
+            <pre style="margin-top:6px;"># Linux / WSL (Ubuntu)
+chmod 400 F5.pem
+
+# Windows PowerShell (native SSH)
+icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
           </div>
         </div>
       </div>
