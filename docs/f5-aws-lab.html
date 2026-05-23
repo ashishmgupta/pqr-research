@@ -159,7 +159,7 @@
         </tr>
         <tr>
           <td><strong>Cost estimate</strong></td>
-          <td>m5.2xlarge PAYG ≈ $1.50–$2.50/hr. Terminate the instance when done.</td>
+          <td>m5.xlarge GOOD PAYG ≈ $0.40–$0.60/hr. Terminate the instance when done.</td>
         </tr>
       </tbody>
     </table>
@@ -175,9 +175,9 @@
         <div class="step-title">Find the listing</div>
         <div class="step-body">
           In the AWS Console, go to <strong>AWS Marketplace → Discover products</strong>.
-          Search for <code>F5 BIG-IP Best PAYG</code>. Select
-          <strong>"F5 BIG-IP Virtual Edition — BEST (PAYG, 25 Mbps)"</strong>.
-          The 25 Mbps PAYG tier is sufficient for this lab and requires no separate license file.
+          Search for <code>F5 BIG-IP Good PAYG</code>. Select
+          <strong>"F5 BIG-IP Virtual Edition — GOOD (PAYG, 25 Mbps)"</strong>.
+          GOOD includes full LTM SSL offloading and cipher group support — everything this lab needs. No separate license file required.
         </div>
       </div>
     </div>
@@ -209,9 +209,9 @@
       <div class="step-content">
         <div class="step-title">Instance type</div>
         <div class="step-body">
-          Select <strong>m5.2xlarge</strong> (8 vCPU, 32 GB RAM). This is the
-          recommended minimum for BIG-IP VE running TLS offload. Smaller types
-          may fail to boot or perform poorly under the SSL workload.
+          Select <strong>m5.xlarge</strong> (4 vCPU, 16 GB RAM). This is sufficient
+          for BIG-IP VE GOOD 25 Mbps in a lab. Smaller types may fail to boot or
+          perform poorly under the SSL workload.
         </div>
       </div>
     </div>
