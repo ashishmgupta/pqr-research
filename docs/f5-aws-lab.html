@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F5 ML-KEM Lab (AWS) — Post-Quantum Readiness</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+<button id="menu-toggle" aria-label="Open navigation">☰</button>
+<div id="sidebar-overlay"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html">
+      <h1>Post-Quantum<br>Readiness</h1>
+    </a>
+  </div>
+  <nav>
+    <a href="index.html" class="nav-home">🏠 Home</a>
+
+    <div class="nav-group">
+      <div class="nav-section">Pre-Quantum State</div>
+      <div class="nav-group-items">
+        <a href="tls-rsa-handshake.html" class="nav-page">TLS 1.2 RSA Handshake</a>
+        <a href="tls-rsa-handshake.html#the-flow" class="nav-sub">The 8-Step Flow</a>
+        <a href="tls-rsa-handshake.html#the-vulnerability" class="nav-sub">Where the Vulnerability Lives</a>
+        <a href="tls-rsa-handshake.html#vs-tls13" class="nav-sub">How TLS 1.3 Fixed It</a>
+
+        <a href="tls-versions.html" class="nav-page">TLS 1.2 vs TLS 1.3</a>
+        <a href="tls-versions.html#at-a-glance" class="nav-sub">At a Glance</a>
+        <a href="tls-versions.html#key-points" class="nav-sub">Three Things to Know</a>
+        <a href="tls-versions.html#why-tls12-fails" class="nav-sub">Why TLS 1.2 Can&#39;t Do ML-KEM</a>
+        <a href="tls-versions.html#real-world" class="nav-sub">Real-World Test</a>
+        <a href="tls-versions.html#cloudflare-tls-settings" class="nav-sub">Cloudflare TLS Settings</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-section">The Quantum Threat</div>
+      <div class="nav-group-items">
+        <a href="pre-quantum.html" class="nav-page">The Problem</a>
+        <a href="pre-quantum.html#where-pii-flows" class="nav-sub">Where PII Flows</a>
+        <a href="pre-quantum.html#why-key-exchange" class="nav-sub">Why Key Exchange</a>
+        <a href="pre-quantum.html#hndl" class="nav-sub">Harvest Now, Decrypt Later</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-section">Post-Quantum Readiness</div>
+      <div class="nav-group-items">
+        <a href="post-quantum.html" class="nav-page">Post-Quantum Crypto</a>
+        <a href="post-quantum.html#nist-standards" class="nav-sub">NIST Standards</a>
+        <a href="post-quantum.html#mlkem-tls" class="nav-sub">ML-KEM in TLS 1.3</a>
+        <a href="post-quantum.html#hybrid" class="nav-sub">Hybrid Mode</a>
+
+        <a href="network.html" class="nav-page">Network Configuration</a>
+        <a href="network.html#control" class="nav-sub">What You Can Control</a>
+        <a href="network.html#tls-legs" class="nav-sub">TLS Termination Points</a>
+        <a href="network.html#vendor-status" class="nav-sub">Vendor PQC Status</a>
+        <a href="network.html#f5-config" class="nav-sub">F5 Configuration</a>
+        <a href="network.html#openssl-setup" class="nav-sub">OpenSSL Setup</a>
+        <a href="network.html#verify" class="nav-sub">Running the Test</a>
+
+        <a href="non-http-protocols.html" class="nav-page">Non-HTTP Protocols</a>
+        <a href="non-http-protocols.html#overview" class="nav-sub">Risk Overview</a>
+        <a href="non-http-protocols.html#external" class="nav-sub">External Connections</a>
+        <a href="non-http-protocols.html#sftp-ssh" class="nav-sub nav-sub-2">SFTP / SSH</a>
+        <a href="non-http-protocols.html#ftps" class="nav-sub nav-sub-2">FTPS</a>
+        <a href="non-http-protocols.html#smtp" class="nav-sub nav-sub-2">SMTP / Email</a>
+        <a href="non-http-protocols.html#internal" class="nav-sub">Internal Connections</a>
+        <a href="non-http-protocols.html#ldap" class="nav-sub nav-sub-2">LDAPS</a>
+        <a href="non-http-protocols.html#kerberos" class="nav-sub nav-sub-2">Kerberos</a>
+        <a href="non-http-protocols.html#ipsec" class="nav-sub nav-sub-2">IPsec / IKEv2</a>
+        <a href="non-http-protocols.html#database" class="nav-sub nav-sub-2">Database TLS</a>
+        <a href="non-http-protocols.html#sip" class="nav-sub nav-sub-2">SIP / VoIP</a>
+        <a href="non-http-protocols.html#grpc" class="nav-sub nav-sub-2">gRPC</a>
+        <a href="non-http-protocols.html#mqtt" class="nav-sub nav-sub-2">MQTT</a>
+
+        <a href="f5-aws-lab.html" class="nav-page current">F5 ML-KEM Lab (AWS)</a>
+        <a href="#launch-f5" class="nav-sub">Launch via Marketplace</a>
+        <a href="#initial-config" class="nav-sub">Initial Config</a>
+        <a href="#vip-no-mlkem" class="nav-sub">VIP without ML-KEM</a>
+        <a href="#vip-with-mlkem" class="nav-sub">VIP with ML-KEM</a>
+        <a href="#test" class="nav-sub">Testing the Difference</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Post-Quantum Readiness · Lab</div>
+    <h1>F5 ML-KEM Lab on AWS</h1>
+    <p class="subtitle">
+      Spin up a BIG-IP instance via AWS Marketplace, configure two VIPs side by side —
+      one with ML-KEM enabled and one without — and verify the difference with
+      <code>openssl s_client</code>. The goal is a working before/after you can run
+      commands against yourself.
+    </p>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>Version requirement:</strong> ML-KEM on F5 BIG-IP requires TMOS 17.5.1 or later.
+    Earlier versions do not support the <code>SecP256r1ML-KEM-768</code> cipher group.
+    Confirm the AMI version before launching.
+  </div>
+
+  <!-- ── What this lab sets up ─────────────────────────────────────── -->
+  <h3 id="overview">What This Lab Sets Up</h3>
+  <p>
+    A single BIG-IP VE instance in AWS with two virtual servers on the same public IP,
+    on different ports:
+  </p>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:rgba(248,81,73,0.25);">
+      <h4 style="color:var(--red);">Port 8443 — No ML-KEM</h4>
+      <p>Standard TLS 1.3 with classical ECDH key exchange. This is the baseline — what
+      most F5 deployments look like today without any PQC configuration.</p>
+    </div>
+    <div class="card" style="border-color:rgba(63,185,80,0.25);">
+      <h4 style="color:var(--green);">Port 443 — With ML-KEM</h4>
+      <p>TLS 1.3 with <code>SecP256r1ML-KEM-768</code> cipher group enabled. A compatible
+      client will negotiate <code>X25519MLKEM768</code> as the key exchange group.</p>
+    </div>
+  </div>
+
+  <p>
+    Both VIPs point to the same backend pool. The only difference is the Client SSL profile
+    attached to each. You can run identical <code>openssl s_client</code> commands against
+    both ports and observe the negotiated key exchange group change.
+  </p>
+
+  <!-- ── Prerequisites ─────────────────────────────────────────────── -->
+  <h3 id="prerequisites">Prerequisites</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Requirement</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>AWS account</strong></td>
+          <td>With permission to subscribe to Marketplace products and launch EC2 instances</td>
+        </tr>
+        <tr>
+          <td><strong>EC2 key pair</strong></td>
+          <td>Create one in the target region before launching — you'll need it for initial SSH access</td>
+        </tr>
+        <tr>
+          <td><strong>VPC with public subnet</strong></td>
+          <td>Internet gateway attached. The BIG-IP management port needs outbound internet for licensing.</td>
+        </tr>
+        <tr>
+          <td><strong>OpenSSL 3.5+</strong></td>
+          <td>Required on your test machine to negotiate ML-KEM. See <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL Setup</a>.</td>
+        </tr>
+        <tr>
+          <td><strong>Cost estimate</strong></td>
+          <td>m5.2xlarge PAYG ≈ $1.50–$2.50/hr. Terminate the instance when done.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Launch F5 via Marketplace ─────────────────────────────────── -->
+  <h3 id="launch-f5">Launch F5 BIG-IP via AWS Marketplace</h3>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Find the listing</div>
+        <div class="step-body">
+          In the AWS Console, go to <strong>AWS Marketplace → Discover products</strong>.
+          Search for <code>F5 BIG-IP Best PAYG</code>. Select
+          <strong>"F5 BIG-IP Virtual Edition — BEST (PAYG, 25 Mbps)"</strong>.
+          The 25 Mbps PAYG tier is sufficient for this lab and requires no separate license file.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Check the version</div>
+        <div class="step-body">
+          On the product page, click <strong>Continue to Subscribe</strong>, then
+          <strong>Continue to Configuration</strong>. Under <em>Software Version</em>,
+          select <strong>17.5.1</strong> or later. If only 17.1.x or 16.x are listed,
+          check the BYOL listing which may carry a newer AMI.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Choose region and launch method</div>
+        <div class="step-body">
+          Select your region, then click <strong>Continue to Launch</strong>.
+          Under <em>Choose Action</em> select <strong>Launch through EC2</strong> —
+          this gives you full control over instance type, networking, and security groups.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Instance type</div>
+        <div class="step-body">
+          Select <strong>m5.2xlarge</strong> (8 vCPU, 32 GB RAM). This is the
+          recommended minimum for BIG-IP VE running TLS offload. Smaller types
+          may fail to boot or perform poorly under the SSL workload.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Network settings</div>
+        <div class="step-body">
+          Place the instance in a <strong>public subnet</strong> with auto-assign public IP
+          enabled. For this single-NIC lab, one interface is enough — management and
+          data plane share the same interface.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-title">Security group</div>
+        <div class="step-body">
+          Create a new security group with the following inbound rules (source: your IP only):
+          <pre style="margin-top:8px;">TCP 22    — SSH (initial access)
+TCP 443   — VIP with ML-KEM
+TCP 8443  — BIG-IP management UI + VIP without ML-KEM
+ICMP      — ping (optional but useful)</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-title">Key pair and launch</div>
+        <div class="step-body">
+          Select your existing EC2 key pair. Click <strong>Launch Instance</strong>.
+          The instance takes 3–5 minutes to pass both status checks and finish
+          BIG-IP's internal initialisation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Initial Config ────────────────────────────────────────────── -->
+  <h3 id="initial-config">Initial Configuration</h3>
+
+  <p>
+    Once the instance is running, retrieve its <strong>public IP</strong> from the EC2 console.
+  </p>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Set the admin password via SSH</div>
+        <div class="step-body">
+          BIG-IP PAYG instances use the EC2 instance ID as the initial admin password.
+          SSH in and change it immediately:
+          <pre style="margin-top:8px;">ssh -i your-key.pem admin@&lt;PUBLIC-IP&gt;
+
+# At the BIG-IP tmsh prompt:
+modify auth user admin password &lt;NEW-PASSWORD&gt;
+save sys config</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Access the management UI</div>
+        <div class="step-body">
+          Open <code>https://&lt;PUBLIC-IP&gt;:8443</code> in your browser.
+          Accept the self-signed cert warning. Log in as <code>admin</code> with
+          the password you just set. The Setup Wizard will appear — you can
+          skip it for this lab.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Confirm TMOS version</div>
+        <div class="step-body">
+          In the TMUI top-right corner the version is shown. Alternatively via SSH:
+          <pre style="margin-top:8px;">show sys version | grep Version</pre>
+          Confirm it shows <strong>17.5.1</strong> or later before continuing.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Create a self-signed certificate</div>
+        <div class="step-body">
+          Both VIPs need a certificate. For this lab a self-signed cert is fine.
+          In TMUI: <strong>System → Certificate Management → Traffic Certificate Management → SSL Certificate List → Create</strong>.
+          Or via TMSH:
+          <pre style="margin-top:8px;">create sys crypto key lab-key gen-certificate { \
+  common-name lab.example.com \
+  key-size 2048 }</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Create a backend pool</div>
+        <div class="step-body">
+          Both VIPs will point to the same pool. For a quick lab backend,
+          run a simple HTTPS server on another EC2 instance, or use the
+          BIG-IP's own management address as a loopback. Create the pool
+          via TMSH (replace <code>10.0.1.10</code> with your backend IP):
+          <pre style="margin-top:8px;">create ltm pool lab-pool {
+  members add { 10.0.1.10:443 { address 10.0.1.10 } }
+  monitor https
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIP without ML-KEM ────────────────────────────────────────── -->
+  <h3 id="vip-no-mlkem">VIP without ML-KEM (Port 8443 — Baseline)</h3>
+
+  <p>
+    This is a standard TLS 1.3 virtual server with classical key exchange.
+    It represents the current default state of most F5 deployments.
+  </p>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Create the Client SSL profile — no ML-KEM</div>
+        <div class="step-body">
+<pre>create ltm profile client-ssl lab-ssl-classical {
+    defaults-from clientssl
+    cert lab-key.crt
+    key lab-key.key
+    ciphers "TLS13-AES128-GCM-SHA256:TLS13-AES256-GCM-SHA384:\
+ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+    options { no-tlsv1 no-tlsv1-1 }
+}</pre>
+          This profile uses classical ECDH groups (P-256, X25519) — no ML-KEM cipher group
+          is attached. A client offering <code>X25519MLKEM768</code> will fall back to
+          classical negotiation.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Create the virtual server on port 8443</div>
+        <div class="step-body">
+<pre>create ltm virtual lab-vip-classical {
+    destination 0.0.0.0:8443
+    ip-protocol tcp
+    pool lab-pool
+    profiles add {
+        lab-ssl-classical { context clientside }
+        tcp {}
+    }
+    source-address-translation { type automap }
+    vlans-enabled
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIP with ML-KEM ───────────────────────────────────────────── -->
+  <h3 id="vip-with-mlkem">VIP with ML-KEM (Port 443)</h3>
+
+  <p>
+    This virtual server uses a Client SSL profile with the
+    <code>SecP256r1ML-KEM-768</code> cipher group. TLS 1.2 must be disabled —
+    ML-KEM only works in TLS 1.3 via the <code>key_share</code> extension.
+  </p>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Create the ML-KEM cipher group</div>
+        <div class="step-body">
+          BIG-IP 17.5.1 introduces <code>SecP256r1ML-KEM-768</code> as a named cipher.
+          Create a cipher rule and group that includes it alongside classical fallbacks:
+<pre>create ltm cipher rule ml-kem-rule {
+    cipher "TLS13-AES128-GCM-SHA256:TLS13-AES256-GCM-SHA384"
+    key-exchange "SecP256r1ML-KEM-768:X25519:P-256"
+    signature "RSA-PSS-SHA256:ECDSA-SHA256"
+}
+
+create ltm cipher group ml-kem-group {
+    allow { ml-kem-rule }
+    ordering default
+}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Create the Client SSL profile — with ML-KEM</div>
+        <div class="step-body">
+          Attach the cipher group and force TLS 1.3 only. Setting
+          <code>no-tlsv1-2</code> ensures only TLS 1.3 connections are accepted,
+          which is required for ML-KEM to negotiate:
+<pre>create ltm profile client-ssl lab-ssl-mlkem {
+    defaults-from clientssl
+    cert lab-key.crt
+    key lab-key.key
+    cipher-group ml-kem-group
+    ciphers none
+    options { no-tlsv1 no-tlsv1-1 no-tlsv1-2 }
+}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Create the virtual server on port 443</div>
+        <div class="step-body">
+<pre>create ltm virtual lab-vip-mlkem {
+    destination 0.0.0.0:443
+    ip-protocol tcp
+    pool lab-pool
+    profiles add {
+        lab-ssl-mlkem { context clientside }
+        tcp {}
+    }
+    source-address-translation { type automap }
+    vlans-enabled
+}</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Save configuration</div>
+        <div class="step-body">
+<pre>save sys config</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Testing ───────────────────────────────────────────────────── -->
+  <h3 id="test">Testing the Difference</h3>
+
+  <p>
+    You need OpenSSL 3.5+ on your test machine. See
+    <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL Setup</a>
+    if you haven't built it yet. Run both commands against the same public IP.
+  </p>
+
+  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 8443 — classical (no ML-KEM)</h4>
+  <pre>openssl s_client -connect &lt;PUBLIC-IP&gt;:8443 \
+  -groups X25519MLKEM768:X25519:P-256 \
+  2>&amp;1 | grep -E "Protocol|group|Cipher"</pre>
+
+  <p>Expected output — the client offered ML-KEM but the server didn't support it, so they
+  fell back to classical X25519:</p>
+  <pre><span class="highlight">Protocol  : TLSv1.3</span>
+<span class="comment">Negotiated TLS1.3 group: X25519</span>
+Cipher    : TLS_AES_256_GCM_SHA384</pre>
+
+  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 443 — with ML-KEM</h4>
+  <pre>openssl s_client -connect &lt;PUBLIC-IP&gt;:443 \
+  -groups X25519MLKEM768:X25519:P-256 \
+  2>&amp;1 | grep -E "Protocol|group|Cipher"</pre>
+
+  <p>Expected output — both sides support ML-KEM, so it is negotiated:</p>
+  <pre><span class="highlight">Protocol  : TLSv1.3</span>
+<span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>
+Cipher    : TLS_AES_256_GCM_SHA384</pre>
+
+  <div class="callout callout-blue">
+    <strong>The one line that tells the whole story:</strong>
+    <code>Negotiated TLS1.3 group: X25519MLKEM768</code> on port 443 vs
+    <code>Negotiated TLS1.3 group: X25519</code> on port 8443. Same client, same server IP,
+    same cipher — the only difference is whether the Client SSL profile includes
+    the ML-KEM cipher group. That is the entire configuration delta between
+    a classically vulnerable TLS session and a post-quantum protected one.
+  </div>
+
+  <h3 id="cleanup">Teardown</h3>
+  <p>
+    The instance costs money while running. When you're done testing, terminate it from the
+    EC2 console. There is no persistent storage to worry about — all BIG-IP configuration
+    lives on the instance root volume which is deleted on termination.
+  </p>
+  <pre># Confirm both VIPs are tested, then terminate via AWS Console:
+# EC2 → Instances → select instance → Instance State → Terminate</pre>
+
+  <div class="page-nav">
+    <a href="non-http-protocols.html">
+      <span class="nav-label">← Previous</span>
+      <span class="nav-title">Non-HTTP Protocols</span>
+    </a>
+    <a href="index.html" class="next">
+      <span class="nav-label">↑ Back to</span>
+      <span class="nav-title">Home</span>
+    </a>
+  </div>
+
+  <footer>
+    <p>
+      Sources:
+      <a href="https://community.f5.com/kb/technicalarticles/future-proofing-your-network-enabling-quantum-ciphers-on-f5-big-ip-tmos-17-5-1/342586" target="_blank">F5 DevCentral KB 342586</a> ·
+      <a href="https://csrc.nist.gov/publications/detail/fips/203/final" target="_blank">NIST FIPS 203</a> ·
+      <a href="https://aws.amazon.com/marketplace/pp/prodview-nlakutvltzij4" target="_blank">F5 BIG-IP on AWS Marketplace</a>
+    </p>
+  </footer>
+</main>
+
+<script>
+  const sections = document.querySelectorAll('h3[id]');
+  const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href').endsWith('#' + entry.target.id)) link.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // ── Collapsible nav groups ────────────────────────────────────────
+  (function () {
+    document.querySelectorAll('.nav-group').forEach(function (group) {
+      if (!group.querySelector('.nav-page.current')) {
+        group.classList.add('collapsed');
+      }
+      group.querySelector('.nav-section').addEventListener('click', function () {
+        group.classList.toggle('collapsed');
+      });
+    });
+
+    // ── Mobile sidebar toggle ───────────────────────────────────────
+    var btn     = document.getElementById('menu-toggle');
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    function openNav()  { sidebar.classList.add('open'); overlay.classList.add('open'); }
+    function closeNav() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+    if (btn) {
+      btn.addEventListener('click', function () {
+        sidebar.classList.contains('open') ? closeNav() : openNav();
+      });
+      overlay.addEventListener('click', closeNav);
+      sidebar.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeNav); });
+    }
+  })();
+</script>
+</body>
+</html>
