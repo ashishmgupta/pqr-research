@@ -338,11 +338,13 @@ save sys config</pre>
       <div class="step-content">
         <div class="step-title">Create a backend pool</div>
         <div class="step-body">
-          Both VIPs will point to the same pool. For a quick lab backend,
-          run a simple HTTPS server on another EC2 instance, or use the
-          BIG-IP's own management address as a loopback. Create the pool
-          via TMSH (replace <code>10.0.1.10</code> with your backend IP):
-          <pre style="margin-top:8px;">create ltm pool lab-pool { members add { 10.0.1.10:443 { address 10.0.1.10 } } monitor https }</pre>
+          Both VIPs need a pool. For this lab the backend doesn't need to be reachable —
+          the TLS handshake (where ML-KEM is negotiated) completes before F5 attempts the
+          backend connection. Use <code>192.0.2.1</code>, an RFC 5737 reserved address
+          that F5 accepts but that routes nowhere:
+          <pre style="margin-top:8px;">create ltm pool lab-pool { members add { 192.0.2.1:443 { address 192.0.2.1 } } }</pre>
+          No monitor is set intentionally — without one F5 marks the member
+          <em>unchecked</em> and still forwards, so the VIP stays green.
         </div>
       </div>
     </div>
