@@ -329,7 +329,6 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
           Paste these commands into the tmsh prompt:
           <pre style="margin-top:8px;">create sys crypto key lab-key { key-size 2048 key-type rsa-private }
 create sys crypto cert lab-cert { common-name lab.example.com key lab-key lifetime 3650 }
-modify sys crypto cert lab-cert { issuer-cert lab-cert }
 save sys config</pre>
         </div>
       </div>
