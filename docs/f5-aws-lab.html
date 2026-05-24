@@ -364,7 +364,7 @@ save sys config</pre>
       <div class="step-content">
         <div class="step-title">Create the Client SSL profile — no ML-KEM</div>
         <div class="step-body">
-<pre>create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl cert lab-cert key lab-key ciphers "TLS13-AES128-GCM-SHA256:TLS13-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384" }</pre>
+<pre>create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl cert lab-cert key lab-key cipher-group none ciphers "TLS13-AES128-GCM-SHA256:TLS13-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384" }</pre>
           This profile uses classical ECDH groups (P-256, X25519) — no ML-KEM cipher group
           is attached. A client offering <code>X25519MLKEM768</code> will fall back to
           classical negotiation.
