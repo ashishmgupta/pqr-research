@@ -323,13 +323,11 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-content">
-        <div class="step-title">Create a self-signed certificate</div>
+        <div class="step-title">No certificate setup needed</div>
         <div class="step-body">
-          Both VIPs need a certificate. For this lab a self-signed cert is fine.
-          Paste these commands into the tmsh prompt:
-          <pre style="margin-top:8px;">create sys crypto key lab-key { key-size 2048 key-type rsa-private }
-create sys crypto cert lab-cert { common-name lab.example.com key lab-key lifetime 3650 }
-save sys config</pre>
+          The SSL profiles inherit the built-in default self-signed cert from the
+          <code>clientssl</code> parent profile. No manual cert creation required —
+          the lab is testing key exchange groups, not certificate validation.
         </div>
       </div>
     </div>
@@ -370,7 +368,7 @@ save sys config</pre>
           restrict <code>dh-groups</code> to classical groups only — no <code>X25519MLKEM768</code>:
 <pre>create ltm cipher rule classical-rule { cipher DEFAULT dh-groups "P256:X25519" signature-algorithms DEFAULT }
 create ltm cipher group classical-group { allow add { classical-rule } }
-create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl cert lab-cert key lab-key cipher-group classical-group ciphers none }</pre>
+create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl cipher-group classical-group ciphers none }</pre>
           A client offering <code>X25519MLKEM768</code> will fall back to classical
           <code>X25519</code> because that group is not in the rule.
         </div>
@@ -417,7 +415,7 @@ create ltm cipher group ml-kem-group { allow { ml-kem-rule } ordering default }<
           Attach the cipher group and force TLS 1.3 only. Setting
           <code>no-tlsv1-2</code> ensures only TLS 1.3 connections are accepted,
           which is required for ML-KEM to negotiate:
-<pre>create ltm profile client-ssl lab-ssl-mlkem { defaults-from clientssl cert lab-cert key lab-key cipher-group ml-kem-group ciphers none }</pre>
+<pre>create ltm profile client-ssl lab-ssl-mlkem { defaults-from clientssl cipher-group ml-kem-group ciphers none }</pre>
         </div>
       </div>
     </div>
