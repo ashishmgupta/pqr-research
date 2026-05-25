@@ -115,7 +115,7 @@
 
   <div class="callout callout-yellow">
     <strong>Version requirement:</strong> ML-KEM on F5 BIG-IP requires TMOS 17.5.1 or later.
-    Earlier versions do not support the <code>SecP256r1ML-KEM-768</code> cipher group.
+    Earlier versions do not support <code>X25519MLKEM768</code> as a DH group in cipher rules.
     Confirm the AMI version before launching.
   </div>
 
@@ -128,13 +128,13 @@
 
   <div class="card-grid">
     <div class="card" style="border-color:rgba(248,81,73,0.25);">
-      <h4 style="color:var(--red);">Port 8443 — No ML-KEM</h4>
+      <h4 style="color:var(--red);">Port 9443 — No ML-KEM</h4>
       <p>Standard TLS 1.3 with classical ECDH key exchange. This is the baseline — what
       most F5 deployments look like today without any PQC configuration.</p>
     </div>
     <div class="card" style="border-color:rgba(63,185,80,0.25);">
       <h4 style="color:var(--green);">Port 443 — With ML-KEM</h4>
-      <p>TLS 1.3 with <code>SecP256r1ML-KEM-768</code> cipher group enabled. A compatible
+      <p>TLS 1.3 with <code>X25519MLKEM768</code> DH group enabled. A compatible
       client will negotiate <code>X25519MLKEM768</code> as the key exchange group.</p>
     </div>
   </div>
@@ -247,8 +247,16 @@
           Create a new security group with the following inbound rules (source: your IP only):
           <pre style="margin-top:8px;">TCP 22    — SSH (initial access)
 TCP 443   — VIP with ML-KEM
-TCP 8443  — BIG-IP management UI + VIP without ML-KEM
+TCP 8443  — BIG-IP management UI
+TCP 9443  — VIP without ML-KEM (classical baseline)
 ICMP      — ping (optional but useful)</pre>
+          <div class="callout callout-yellow" style="margin-top:8px;">
+            <strong>Why not port 8443 for the classical VIP?</strong>
+            In a single-NIC AWS deployment, the BIG-IP management web UI already binds
+            port 8443 at the OS level. Traffic on that port goes to the management httpd
+            before TMM sees it, so a data-plane VIP on 8443 receives zero packets.
+            Port 9443 avoids that conflict.
+          </div>
         </div>
       </div>
     </div>
@@ -314,9 +322,10 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
       <div class="step-content">
         <div class="step-title">Confirm TMOS version</div>
         <div class="step-body">
-          In the TMUI top-right corner the version is shown. Alternatively via SSH:
-          <pre style="margin-top:8px;">show sys version | grep Version</pre>
-          Confirm it shows <strong>17.5.1</strong> or later before continuing.
+          In the TMUI top-right corner the version is shown. Alternatively from the tmsh prompt:
+          <pre style="margin-top:8px;">show sys version</pre>
+          Look for the <code>Version</code> line in the output. Confirm it shows
+          <strong>17.5.1</strong> or later before continuing.
         </div>
       </div>
     </div>
@@ -349,7 +358,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
   </div>
 
   <!-- ── VIP without ML-KEM ────────────────────────────────────────── -->
-  <h3 id="vip-no-mlkem">VIP without ML-KEM (Port 8443 — Baseline)</h3>
+  <h3 id="vip-no-mlkem">VIP without ML-KEM (Port 9443 — Baseline)</h3>
 
   <p>
     This is a standard TLS 1.3 virtual server with classical key exchange.
@@ -360,25 +369,52 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
-        <div class="step-title">Create the classical SSL profile</div>
+        <div class="step-title">Create the classical cipher rule and group</div>
         <div class="step-body">
-          The classical (no ML-KEM) profile needs no custom cipher rule at all.
-          The built-in <code>clientssl</code> profile already negotiates TLS 1.3 with
-          classical key exchange (X25519, P-256). ML-KEM only gets negotiated if you
-          explicitly add it — so the default <em>is</em> the classical baseline:
-<pre>create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl }</pre>
-          This is the "before" state: a standard F5 deployment with no PQC configuration.
-          A client offering <code>X25519MLKEM768</code> will fall back to classical
-          <code>X25519</code> because the server never advertises ML-KEM support.
+          The built-in <code>clientssl</code> profile has <code>no-tlsv1.3</code> in its
+          options on TMOS 17.5.1 — TLS 1.3 is disabled by default and must be explicitly
+          enabled. BIG-IP also requires a cipher group whenever TLS 1.3 is active.
+          The classical rule uses <code>dh-groups DEFAULT</code> which includes the
+          standard ECDH groups (P-256, X25519) but intentionally excludes
+          <code>X25519MLKEM768</code> — that omission is what makes this the "before" state:
+<pre>create ltm cipher rule classical-rule { cipher DEFAULT dh-groups DEFAULT signature-algorithms DEFAULT }
+create ltm cipher group classical-group { allow add { classical-rule } }</pre>
         </div>
       </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <div class="step-title">Create the virtual server on port 8443</div>
+        <div class="step-title">Create the Client SSL profile — classical</div>
         <div class="step-body">
-<pre>create ltm virtual lab-vip-classical { destination 0.0.0.0:8443 ip-protocol tcp pool lab-pool profiles add { lab-ssl-classical { context clientside } tcp { } } source-address-translation { type automap } vlans-enabled }</pre>
+          Override the inherited <code>no-tlsv1.3</code> option by specifying the options
+          list explicitly (without it). Attach the cipher group and set
+          <code>ciphers none</code> — a profile cannot have both a ciphers string and a
+          cipher group:
+<pre>create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl options { dont-insert-empty-fragments no-dtlsv1.2 } cipher-group classical-group ciphers none }</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Create the virtual server on port 9443</div>
+        <div class="step-body">
+          Use <code>vlans-disabled</code> (not <code>vlans-enabled</code>) — in single-NIC
+          mode, <code>vlans-enabled</code> without a VLAN list causes the VIP to receive
+          no traffic:
+<pre>create ltm virtual lab-vip-classical { destination 0.0.0.0:9443 ip-protocol tcp pool lab-pool profiles add { lab-ssl-classical { context clientside } tcp { } } source-address-translation { type automap } vlans-disabled }</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Save configuration</div>
+        <div class="step-body">
+<pre>save sys config</pre>
+          You can test the classical VIP now (see <a href="#test" style="color:var(--blue);">Testing</a>)
+          before proceeding to the ML-KEM setup.
         </div>
       </div>
     </div>
@@ -388,21 +424,25 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
   <h3 id="vip-with-mlkem">VIP with ML-KEM (Port 443)</h3>
 
   <p>
-    This virtual server uses a Client SSL profile with the
-    <code>SecP256r1ML-KEM-768</code> cipher group. TLS 1.2 must be disabled —
-    ML-KEM only works in TLS 1.3 via the <code>key_share</code> extension.
+    This virtual server uses a Client SSL profile backed by a custom cipher group
+    that includes <code>X25519MLKEM768</code> as a preferred DH group. ML-KEM
+    only negotiates over TLS 1.3 via the <code>key_share</code> extension — the
+    classical fallback remains available for clients that don't support it.
   </p>
 
   <div class="step-list">
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
-        <div class="step-title">Create the ML-KEM cipher group</div>
+        <div class="step-title">Create the cipher rule and cipher group</div>
         <div class="step-body">
-          BIG-IP 17.5.1 introduces <code>SecP256r1ML-KEM-768</code> as a named cipher.
-          Create a cipher rule and group that includes it alongside classical fallbacks:
-<pre>create ltm cipher rule ml-kem-rule { cipher "TLS13-AES128-GCM-SHA256:TLS13-AES256-GCM-SHA384" key-exchange "SecP256r1ML-KEM-768:X25519:P-256" signature "RSA-PSS-SHA256:ECDSA-SHA256" }
-create ltm cipher group ml-kem-group { allow { ml-kem-rule } ordering default }</pre>
+          The <code>dh-groups</code> property controls key exchange. Setting
+          <code>X25519MLKEM768:DEFAULT</code> advertises the hybrid ML-KEM group first,
+          with all standard groups as fallback. The <code>cipher</code> and
+          <code>signature-algorithms</code> properties use <code>DEFAULT</code> to
+          inherit the platform defaults — no custom cipher strings needed:
+<pre>create ltm cipher rule ml-kem-rule { cipher DEFAULT dh-groups "X25519MLKEM768:DEFAULT" signature-algorithms DEFAULT }
+create ltm cipher group ml-kem-group { allow add { ml-kem-rule } }</pre>
         </div>
       </div>
     </div>
@@ -411,10 +451,10 @@ create ltm cipher group ml-kem-group { allow { ml-kem-rule } ordering default }<
       <div class="step-content">
         <div class="step-title">Create the Client SSL profile — with ML-KEM</div>
         <div class="step-body">
-          Attach the cipher group and force TLS 1.3 only. Setting
-          <code>no-tlsv1-2</code> ensures only TLS 1.3 connections are accepted,
-          which is required for ML-KEM to negotiate:
-<pre>create ltm profile client-ssl lab-ssl-mlkem { defaults-from clientssl cipher-group ml-kem-group ciphers none }</pre>
+          Same options override as the classical profile — must remove the inherited
+          <code>no-tlsv1.3</code> so TLS 1.3 is active. Attach the ML-KEM cipher group
+          and set <code>ciphers none</code>:
+<pre>create ltm profile client-ssl lab-ssl-mlkem { defaults-from clientssl options { dont-insert-empty-fragments no-dtlsv1.2 } cipher-group ml-kem-group ciphers none }</pre>
         </div>
       </div>
     </div>
@@ -423,7 +463,7 @@ create ltm cipher group ml-kem-group { allow { ml-kem-rule } ordering default }<
       <div class="step-content">
         <div class="step-title">Create the virtual server on port 443</div>
         <div class="step-body">
-<pre>create ltm virtual lab-vip-mlkem { destination 0.0.0.0:443 ip-protocol tcp pool lab-pool profiles add { lab-ssl-mlkem { context clientside } tcp { } } source-address-translation { type automap } vlans-enabled }</pre>
+<pre>create ltm virtual lab-vip-mlkem { destination 0.0.0.0:443 ip-protocol tcp pool lab-pool profiles add { lab-ssl-mlkem { context clientside } tcp { } } source-address-translation { type automap } vlans-disabled }</pre>
         </div>
       </div>
     </div>
@@ -447,29 +487,45 @@ create ltm cipher group ml-kem-group { allow { ml-kem-rule } ordering default }<
     if you haven't built it yet. Run both commands against the same public IP.
   </p>
 
-  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 8443 — classical (no ML-KEM)</h4>
-  <pre>openssl s_client -connect &lt;PUBLIC-IP&gt;:8443 -groups X25519MLKEM768:X25519:P-256 2>&amp;1 | grep -E "Protocol|group|Cipher"</pre>
+  <div class="callout callout-yellow">
+    <strong>OpenSSL 3.5+ required.</strong> The system <code>openssl</code> on most Linux distros is
+    3.0.x and does not support ML-KEM. Use the custom-built binary — referenced here as
+    <code>openssl35</code> — from the <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL Setup</a> guide.
+  </div>
 
-  <p>Expected output — the client offered ML-KEM but the server didn't support it, so they
-  fell back to classical X25519:</p>
-  <pre><span class="highlight">Protocol  : TLSv1.3</span>
-<span class="comment">Negotiated TLS1.3 group: X25519</span>
-Cipher    : TLS_AES_256_GCM_SHA384</pre>
+  <div class="callout callout-yellow" style="margin-bottom:16px;">
+    <strong>Use <code>&lt;/dev/null</code> to get clean output.</strong>
+    Without it, <code>openssl s_client</code> waits for stdin and the session
+    summary (including the negotiated group) is not printed until you close the
+    connection. <code>&lt;/dev/null</code> closes stdin immediately so the full
+    output is flushed on exit.
+  </div>
+
+  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 9443 — classical (no ML-KEM)</h4>
+  <pre>openssl35 s_client -connect &lt;PUBLIC-IP&gt;:9443 -tls1_3 -groups X25519MLKEM768:X25519:P-256 &lt;/dev/null 2>&amp;1 | grep -E "Protocol|Temp Key|group|Cipher is"</pre>
+
+  <p>Expected output — TLS 1.3 negotiated, server selected a classical ECDH group (P-256).
+  The client offered ML-KEM but the server's cipher rule has no PQC DH group, so it
+  fell back to classical:</p>
+  <pre><span class="comment">Peer Temp Key: ECDH, prime256v1, 256 bits</span>
+<span class="highlight">New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256</span>
+Protocol: TLSv1.3</pre>
 
   <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 443 — with ML-KEM</h4>
-  <pre>openssl s_client -connect &lt;PUBLIC-IP&gt;:443 -groups X25519MLKEM768:X25519:P-256 2>&amp;1 | grep -E "Protocol|group|Cipher"</pre>
+  <pre>openssl35 s_client -connect &lt;PUBLIC-IP&gt;:443 -tls1_3 -groups X25519MLKEM768:X25519:P-256 &lt;/dev/null 2>&amp;1 | grep -E "Protocol|Temp Key|group|Cipher is"</pre>
 
   <p>Expected output — both sides support ML-KEM, so it is negotiated:</p>
-  <pre><span class="highlight">Protocol  : TLSv1.3</span>
-<span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>
-Cipher    : TLS_AES_256_GCM_SHA384</pre>
+  <pre><span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>
+<span class="highlight">New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256</span>
+Protocol: TLSv1.3</pre>
 
   <div class="callout callout-blue">
     <strong>The one line that tells the whole story:</strong>
     <code>Negotiated TLS1.3 group: X25519MLKEM768</code> on port 443 vs
-    <code>Negotiated TLS1.3 group: X25519</code> on port 8443. Same client, same server IP,
-    same cipher — the only difference is whether the Client SSL profile includes
-    the ML-KEM cipher group. That is the entire configuration delta between
+    <code>Peer Temp Key: ECDH, prime256v1</code> on port 9443. Same client, same server IP,
+    same TLS version and cipher suite — the only difference is whether the Client SSL
+    profile's cipher rule includes <code>X25519MLKEM768</code> in its
+    <code>dh-groups</code>. That single property is the entire configuration delta between
     a classically vulnerable TLS session and a post-quantum protected one.
   </div>
 
