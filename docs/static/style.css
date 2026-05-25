@@ -168,6 +168,36 @@ body {
   font-size: 11.5px;
 }
 
+/* Category labels within a nav group (non-clickable section dividers) */
+.nav-label {
+  padding: 8px 20px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--blue);
+  margin-top: 4px;
+}
+
+/* Part dividers on lab pages */
+.part-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 48px 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--border);
+}
+.part-title { font-size: 19px; font-weight: 700; color: var(--text); }
+.part-badge {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 4px 12px; border-radius: 14px; white-space: nowrap;
+}
+.part-1 { background: rgba(88,166,255,0.15);  color: var(--blue);  border: 1px solid rgba(88,166,255,0.3); }
+.part-2 { background: rgba(248,81,73,0.15);   color: var(--red);   border: 1px solid rgba(248,81,73,0.3); }
+.part-3 { background: rgba(63,185,80,0.15);   color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+
 /* ── Main content ────────────────────────────────────────────────── */
 main {
   margin-left: var(--sidebar-w);

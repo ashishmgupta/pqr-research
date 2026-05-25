@@ -90,12 +90,22 @@
         <a href="non-http-protocols.html#grpc" class="nav-sub nav-sub-2">gRPC</a>
         <a href="non-http-protocols.html#mqtt" class="nav-sub nav-sub-2">MQTT</a>
 
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-section">F5 ML-KEM Lab</div>
+      <div class="nav-group-items">
         <a href="f5-aws-lab.html" class="nav-page current">F5 ML-KEM Lab (AWS)</a>
+        <div class="nav-label">AWS Marketplace Setup</div>
         <a href="#launch-f5" class="nav-sub">Launch via Marketplace</a>
         <a href="#initial-config" class="nav-sub">Initial Config</a>
+        <div class="nav-label">Pre-17.5.1 · No ML-KEM</div>
+        <a href="#pre-17-5-1" class="nav-sub">Version Check &amp; Error</a>
+        <div class="nav-label">Post-17.5.1 · With ML-KEM</div>
         <a href="#vip-no-mlkem" class="nav-sub">VIP without ML-KEM</a>
         <a href="#vip-with-mlkem" class="nav-sub">VIP with ML-KEM</a>
-        <a href="#test" class="nav-sub">Testing the Difference</a>
+        <a href="#test" class="nav-sub">Testing</a>
       </div>
     </div>
   </nav>
@@ -116,7 +126,8 @@
   <div class="callout callout-yellow">
     <strong>Version requirement:</strong> ML-KEM on F5 BIG-IP requires TMOS 17.5.1 or later.
     Earlier versions do not support <code>X25519MLKEM768</code> as a DH group in cipher rules.
-    Confirm the AMI version before launching.
+    See <a href="#pre-17-5-1" style="color:var(--yellow);">Part 2</a> for a live demonstration
+    of the tmsh validation error on 17.1.3.1.
   </div>
 
   <!-- ── What this lab sets up ─────────────────────────────────────── -->
@@ -176,6 +187,12 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- ── Part 1 ────────────────────────────────────────────────────── -->
+  <div class="part-header" id="f5-setup">
+    <span class="part-badge part-1">Part 1</span>
+    <span class="part-title">AWS Marketplace Setup</span>
   </div>
 
   <!-- ── Launch F5 via Marketplace ─────────────────────────────────── -->
@@ -432,6 +449,86 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── Part 2: Pre-17.5.1 ────────────────────────────────────────── -->
+  <div class="part-header" id="pre-17-5-1">
+    <span class="part-badge part-2">Part 2</span>
+    <span class="part-title">F5 Before 17.5.1 — No ML-KEM Support</span>
+  </div>
+
+  <p>
+    This section demonstrates what happens when you attempt ML-KEM configuration on a
+    BIG-IP running <strong>17.1.3.1</strong>. The goal is to make the version requirement
+    tangible: not just a documentation note, but a live tmsh validation failure that tells
+    you exactly why the version matters.
+  </p>
+  <p>
+    Launched from the same AWS Marketplace listing — the only difference is the
+    <strong>Version</strong> dropdown is set to <code>17.1.3.1-0.0.6</code> instead of 17.5.1.
+  </p>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Select version 17.1.3.1 in the Marketplace launcher</div>
+        <div class="step-body">
+          On the <strong>Launch from EC2</strong> configuration page, open the
+          <strong>Version</strong> dropdown and select
+          <code>17.1.3.1-0.0.6 (Jan 22, 2026)</code>. Everything else — instance type,
+          security group, key pair — is identical to the Part 1 setup.
+          <img src="static/f5-bigip-setup/23_AWS%20Marketplace%20_%20Global.png"
+               alt="AWS Marketplace launch page with version dropdown set to 17.1.3.1-0.0.6"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Confirm the version via tmsh</div>
+        <div class="step-body">
+          After the instance boots, SSH in and run:
+<pre>show sys version</pre>
+          <p style="margin-top:8px;color:var(--text-muted);font-size:13px;">Confirm <code>Version 17.1.3.1</code> before proceeding.</p>
+          <img src="static/f5-bigip-setup/24_AWS%20Marketplace%20_%20Global.png"
+               alt="show sys version output confirming BIG-IP 17.1.3.1 build 0.0.6"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Attempt the ML-KEM cipher rule — tmsh rejects it</div>
+        <div class="step-body">
+          Run the exact same command used in Part 3 to create the ML-KEM cipher rule:
+<pre>create ltm cipher rule ml-kem-rule { cipher DEFAULT dh-groups "X25519MLKEM768:DEFAULT" signature-algorithms DEFAULT }</pre>
+          <p style="margin-top:8px;color:var(--text-muted);font-size:13px;">tmsh rejects it immediately — no object is created:</p>
+<pre><span class="comment">01071d2a:3: Cipher rule (/Common/ml-kem-rule): 'X25519MLKEM768' is not a valid DH Groups.</span></pre>
+          <img src="static/f5-bigip-setup/25_AWS%20Marketplace%20_%20Global.png"
+               alt="tmsh error on 17.1.3.1: X25519MLKEM768 is not a valid DH Groups"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-red">
+    <strong>17.1.x does not know X25519MLKEM768.</strong>
+    The DH group was introduced in 17.5.1. On any earlier version the tmsh object model
+    does not include it as a valid value, so cipher rule creation fails at validation —
+    nothing is written and no VIP can be built on top of it. Upgrading to 17.5.1 or later
+    is the only path to enabling post-quantum key exchange on F5 BIG-IP.
+  </div>
+
+  <!-- ── Part 3 ────────────────────────────────────────────────────── -->
+  <div class="part-header" id="post-17-5-1">
+    <span class="part-badge part-3">Part 3</span>
+    <span class="part-title">F5 17.5.1+ — ML-KEM Configured</span>
   </div>
 
   <!-- ── VIP without ML-KEM ────────────────────────────────────────── -->
@@ -713,7 +810,7 @@ Protocol: TLSv1.3</pre>
 </main>
 
 <script>
-  const sections = document.querySelectorAll('h3[id]');
+  const sections = document.querySelectorAll('h3[id], .part-header[id]');
   const navLinks = document.querySelectorAll('.sidebar a.nav-sub');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
