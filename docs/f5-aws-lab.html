@@ -569,8 +569,9 @@ ltm cipher group ml-kem-group {
         ml-kem-rule { }
     }
 }</pre>
-          <!-- Replace with: <img src="static/f5-bigip-setup/verify-mlkem-cipher.png" ...> -->
-          <div style="border:2px dashed var(--border);border-radius:6px;padding:18px;text-align:center;color:var(--text-muted);margin-top:10px;background:var(--surface-2);font-size:13px;">[ screenshot of tmsh output ]</div>
+          <img src="static/f5-bigip-setup/19_AWS%20Marketplace%20_%20Global.png"
+               alt="create ltm cipher rule ml-kem-rule and cipher group ml-kem-group, then list both showing X25519MLKEM768 in dh-groups"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
         </div>
       </div>
     </div>
@@ -592,8 +593,9 @@ ltm cipher group ml-kem-group {
     defaults-from clientssl
     options { dont-insert-empty-fragments no-dtlsv1.2 }
 }</pre>
-          <!-- Replace with: <img src="static/f5-bigip-setup/verify-mlkem-profile.png" ...> -->
-          <div style="border:2px dashed var(--border);border-radius:6px;padding:18px;text-align:center;color:var(--text-muted);margin-top:10px;background:var(--surface-2);font-size:13px;">[ screenshot of tmsh output ]</div>
+          <img src="static/f5-bigip-setup/20_AWS%20Marketplace%20_%20Global.png"
+               alt="create ltm profile client-ssl lab-ssl-mlkem and list output showing cipher-group ml-kem-group and options without no-tlsv1.3"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
         </div>
       </div>
     </div>
@@ -606,8 +608,9 @@ ltm cipher group ml-kem-group {
           <p style="margin-top:12px;font-weight:600;font-size:13px;">Verify:</p>
 <pre>show ltm virtual lab-vip-mlkem</pre>
           <p style="margin-top:8px;color:var(--text-muted);font-size:13px;">Look for <code>State: enabled</code> and <code>Destination: any:443</code>.</p>
-          <!-- Replace with: <img src="static/f5-bigip-setup/verify-mlkem-vip.png" ...> -->
-          <div style="border:2px dashed var(--border);border-radius:6px;padding:18px;text-align:center;color:var(--text-muted);margin-top:10px;background:var(--surface-2);font-size:13px;">[ screenshot of tmsh output ]</div>
+          <img src="static/f5-bigip-setup/21_AWS%20Marketplace%20_%20Global.png"
+               alt="create ltm virtual lab-vip-mlkem and show output confirming State enabled and Destination any:443"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
         </div>
       </div>
     </div>
@@ -665,6 +668,9 @@ Protocol: TLSv1.3</pre>
   <pre><span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>
 <span class="highlight">New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256</span>
 Protocol: TLSv1.3</pre>
+  <img src="static/f5-bigip-setup/22_AWS%20Marketplace%20_%20Global.png"
+       alt="openssl35 s_client test against port 443 showing Negotiated TLS1.3 group X25519MLKEM768 and TLSv1.3"
+       style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
 
   <div class="callout callout-blue">
     <strong>The one line that tells the whole story:</strong>
