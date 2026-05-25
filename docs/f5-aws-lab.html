@@ -188,86 +188,153 @@
         <div class="step-title">Find the listing</div>
         <div class="step-body">
           In the AWS Console, go to <strong>AWS Marketplace → Discover products</strong>.
-          Search for <code>F5 BIG-IP Good PAYG</code>. Select
-          <strong>"F5 BIG-IP Virtual Edition — GOOD (PAYG, 25 Mbps)"</strong>.
-          GOOD includes full LTM SSL offloading and cipher group support — everything this lab needs. No separate license file required.
+          Search for <code>F5 BIG-IP Good PAYG</code>. The top match will be
+          <strong>"F5 BIG-IP Virtual Edition — GOOD (PAYG, 25Mbps)"</strong> — click it.
+          GOOD includes full LTM SSL offloading and cipher group support. No separate license file required.
+          <img src="static/f5-bigip-setup/01_Discover%20products%20_%20AWS%20Marketplace%20_%20Global.png"
+               alt="AWS Marketplace search results showing F5 BIG-IP Virtual Edition GOOD PAYG 25Mbps as top match"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <div class="step-title">Check the version</div>
+        <div class="step-title">Open the product page and subscribe</div>
         <div class="step-body">
-          On the product page, click <strong>Continue to Subscribe</strong>, then
-          <strong>Continue to Configuration</strong>. Under <em>Software Version</em>,
-          select <strong>17.5.1</strong> or later. If only 17.1.x or 16.x are listed,
-          check the BYOL listing which may carry a newer AMI.
+          On the product page click <strong>View purchase options</strong>.
+          <img src="static/f5-bigip-setup/02_AWS%20Marketplace%20_%20Global.png"
+               alt="F5 BIG-IP GOOD PAYG 25Mbps product page with View purchase options button"
+               style="max-width:480px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
+          <p style="margin-top:10px;">Review the purchase details and click <strong>Subscribe</strong>.
+          This is a usage-based agreement — you are only charged while instances are running,
+          billed hourly at the combined EC2 + software rate.</p>
+          <img src="static/f5-bigip-setup/03_AWS%20Marketplace%20_%20Global.png"
+               alt="Marketplace subscribe page showing purchase details and Subscribe button"
+               style="max-width:560px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
+          <p style="margin-top:10px;">The subscription activates in up to 3 minutes — do not close the page:</p>
+          <img src="static/f5-bigip-setup/04_AWS%20Marketplace%20_%20Global.png"
+               alt="Subscription in progress message"
+               style="max-width:560px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
+          <p style="margin-top:10px;">Once confirmed, click <strong>Launch your software</strong>:</p>
+          <img src="static/f5-bigip-setup/05_AWS%20Marketplace%20_%20Global.png"
+               alt="Purchase confirmation page with Launch your software button highlighted"
+               style="max-width:560px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
-        <div class="step-title">Choose region and launch method</div>
+        <div class="step-title">Select version and launch from EC2</div>
         <div class="step-body">
-          Select your region, then click <strong>Continue to Launch</strong>.
-          Under <em>Choose Action</em> select <strong>Launch through EC2</strong> —
-          this gives you full control over instance type, networking, and security groups.
+          On the launch configuration page:
+          <ul style="margin:8px 0 8px 20px;line-height:1.8;">
+            <li><strong>Version</strong> — change to <strong>17.5.1</strong>. The page defaults
+            to the latest stable release (21.x at time of writing) but this lab is verified
+            on 17.5.1 which introduced ML-KEM support.</li>
+            <li><strong>Region</strong> — select your preferred region.</li>
+            <li><strong>Launch method</strong> — select <strong>Launch from EC2</strong> for
+            full control over instance type, networking, and security groups.</li>
+          </ul>
+          Click <strong>Launch from EC2</strong>.
+          <div class="callout callout-yellow" style="margin-top:10px;">
+            <strong>Change the version before launching.</strong> The default shown is the latest
+            (21.x). This lab's tmsh commands were verified on <strong>17.5.1</strong> — using a
+            different major version may require different syntax.
+          </div>
+          <img src="static/f5-bigip-setup/06_AWS%20Marketplace%20_%20Global.png"
+               alt="Marketplace launch page showing version dropdown set to 21.x and Launch from EC2 button"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-content">
-        <div class="step-title">Instance type</div>
+        <div class="step-title">Name the instance and confirm the AMI</div>
         <div class="step-body">
-          Select <strong>m5.xlarge</strong> (4 vCPU, 16 GB RAM). This is sufficient
-          for BIG-IP VE GOOD 25 Mbps in a lab. Smaller types may fail to boot or
-          perform poorly under the SSL workload.
+          The EC2 <em>Launch an instance</em> page opens with the F5 AMI pre-selected.
+          Give the instance a recognisable name (e.g. <code>f5-mlkem-lab</code>).
+          Confirm the AMI description matches the version you selected.
+          <img src="static/f5-bigip-setup/07_AWS%20Marketplace%20_%20Global.png"
+               alt="EC2 Launch an instance page with F5 BIGIP AMI pre-selected and instance named f5_21x"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-content">
-        <div class="step-title">Network settings</div>
+        <div class="step-title">Instance type</div>
         <div class="step-body">
-          Place the instance in a <strong>public subnet</strong> with auto-assign public IP
-          enabled. For this single-NIC lab, one interface is enough — management and
-          data plane share the same interface.
+          Scroll to <em>Instance type</em> and select <strong>m5.xlarge</strong>
+          (4 vCPU, 16 GB RAM). Smaller types may fail to boot or perform poorly
+          under the SSL workload.
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">6</div>
       <div class="step-content">
-        <div class="step-title">Security group</div>
+        <div class="step-title">Network settings — public subnet</div>
         <div class="step-body">
-          Create a new security group with the following inbound rules (source: your IP only):
-          <pre style="margin-top:8px;">TCP 22    — SSH (initial access)
-TCP 443   — VIP with ML-KEM
-TCP 8443  — BIG-IP management UI
-TCP 9443  — VIP without ML-KEM (classical baseline)
-ICMP      — ping (optional but useful)</pre>
-          <div class="callout callout-yellow" style="margin-top:8px;">
-            <strong>Why not port 8443 for the classical VIP?</strong>
-            In a single-NIC AWS deployment, the BIG-IP management web UI already binds
-            port 8443 at the OS level. Traffic on that port goes to the management httpd
-            before TMM sees it, so a data-plane VIP on 8443 receives zero packets.
-            Port 9443 avoids that conflict.
-          </div>
+          Place the instance in a <strong>public subnet</strong> with auto-assign public IP
+          enabled. For this single-NIC lab one interface is sufficient — management and
+          data plane share the same NIC and IP.
         </div>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">7</div>
       <div class="step-content">
+        <div class="step-title">Security group</div>
+        <div class="step-body">
+          Create a new security group with these four inbound rules.
+          Use <strong>My IP</strong> as the source for all rules — this lab only
+          needs to be reachable from your test machine:
+          <pre style="margin-top:8px;">TCP 22    — SSH (initial access)         source: My IP
+TCP 443   — VIP with ML-KEM              source: My IP
+TCP 8443  — BIG-IP management UI        source: My IP
+TCP 9443  — VIP without ML-KEM          source: My IP</pre>
+          <div class="callout callout-yellow" style="margin-top:8px;">
+            <strong>Why not port 8443 for the classical VIP?</strong>
+            In a single-NIC AWS deployment, the BIG-IP management web UI binds port 8443
+            at the OS level. Traffic arrives at the management httpd before TMM sees it,
+            so a data-plane VIP on 8443 receives zero packets. Port 9443 avoids the conflict.
+          </div>
+          <img src="static/f5-bigip-setup/09_AWS%20Marketplace%20_%20Global.png"
+               alt="Security group inbound rules showing TCP 22, 443, 8443 and 9443"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-content">
         <div class="step-title">Key pair and launch</div>
         <div class="step-body">
-          Select your existing EC2 key pair. Click <strong>Launch Instance</strong>.
-          The instance takes 3–5 minutes to pass both status checks and finish
-          BIG-IP's internal initialisation.
+          Select your existing EC2 key pair. Review the summary panel —
+          confirm <strong>m5.xlarge</strong> is selected — then click
+          <strong>Launch instance</strong>.
+          <img src="static/f5-bigip-setup/10_AWS%20Marketplace%20_%20Global.png"
+               alt="EC2 launch summary showing m5.xlarge instance type and Launch instance button"
+               style="max-width:360px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
+          <p style="margin-top:10px;">A success banner confirms the launch. Click the instance ID
+          link to go directly to it in EC2 Instances:</p>
+          <img src="static/f5-bigip-setup/11_AWS%20Marketplace%20_%20Global.png"
+               alt="Success banner: Successfully initiated launch of instance"
+               style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
+          <p style="margin-top:10px;">The instance takes 3–5 minutes to pass both EC2 status
+          checks and complete BIG-IP's internal initialisation. Wait until both checks show
+          <em>passed</em> before proceeding.</p>
         </div>
       </div>
     </div>
