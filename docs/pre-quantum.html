@@ -194,50 +194,57 @@
 
   <!-- ── HNDL ──────────────────────────────────────────────────────── -->
   <h3 id="hndl">Harvest Now, Decrypt Later</h3>
+
   <p>
-    The attack doesn't need a quantum computer to start. An adversary can capture and store
-    the encrypted TLS sessions on Leg 1 and Leg 2 today. The decryption happens later,
-    once a capable quantum computer exists. The window to protect against this is before
-    the capture happens, not after.
+    Every post-quantum readiness conversation eventually lands on this phrase. It sounds
+    like something from a sci-fi script, but the mechanics are straightforward and the
+    first half is already happening. You do not need a quantum computer to start this
+    attack. You only need one to finish it.
+  </p>
+  <p>
+    The reason this matters for your network <em>today</em> is that the capture step
+    requires nothing special. Bulk interception of TLS traffic at internet scale is
+    well within the capability of nation-state actors right now. The encrypted data
+    sitting in cold storage somewhere is just waiting on the hardware.
   </p>
 
   <div class="step-list">
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">1</div>
       <div class="step-content">
-        <div class="step-title">Capture</div>
-        <div class="step-body">Encrypted TLS sessions on internet-facing segments are archived via ISP taps, transit interception, or BGP hijacking. The handshake data is what matters: it contains the key exchange.</div>
+        <div class="step-title">Harvest</div>
+        <div class="step-body">Encrypted TLS sessions are captured in bulk today via ISP taps, undersea cable interception, BGP route hijacking, or passive collection at internet exchange points. The full ciphertext is stored, including the handshake that locked it.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">2</div>
       <div class="step-content">
         <div class="step-title">Store</div>
-        <div class="step-body">The ciphertext is kept. It contains the RSA or ECDH key exchange material, enough to derive the session key once the underlying math can be broken.</div>
+        <div class="step-body">Storage is cheap. A decade of harvested TLS traffic from a targeted organisation fits on hardware that costs a few thousand dollars. The RSA or ECDH key exchange material is preserved inside that ciphertext, intact and unmodified.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">3</div>
       <div class="step-content">
         <div class="step-title">Wait</div>
-        <div class="step-body">The adversary waits for a cryptographically capable quantum computer. Timeline is uncertain. Most estimates put this 15-20+ years out, but the range is wide.</div>
+        <div class="step-body">The attacker waits for a cryptographically relevant quantum computer. NIST's own timeline puts this somewhere in the 10-15 year window, though estimates vary. The stored data does not expire.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num" style="color:var(--red);border-color:rgba(248,81,73,0.3);">4</div>
       <div class="step-content">
         <div class="step-title">Decrypt</div>
-        <div class="step-body">The quantum computer breaks the key exchange. Session keys are recovered. Traffic captured years earlier (login sessions, documents, API calls, health data) is decrypted retroactively.</div>
+        <div class="step-body">Shor's algorithm breaks the key exchange in polynomial time. Session keys are recovered. Everything captured years earlier, login sessions, health records, financial transactions, M&amp;A discussions, is readable. Retroactively.</div>
       </div>
     </div>
   </div>
 
   <div class="callout callout-red">
-    <strong>The relevant question is not whether a quantum computer exists today.</strong>
-    It is: what PII are you transmitting right now that still needs to be secret in 15 years?
-    If the answer is anything: health records, financial data, authentication tokens,
-    M&amp;A conversations. The migration clock is already running, because the capture
-    is already possible. PQC readiness for the legs you control is where to start.
+    <strong>The clock started when the capture started, not when the quantum computer arrives.</strong>
+    The right question is not "does a quantum computer exist today?" It is: what are you
+    transmitting right now that still needs to be confidential in 10 years? Health records,
+    authentication tokens, financial data, internal strategy. If any of that applies,
+    the window to act is before the harvest, not after. That window is open right now.
   </div>
 
   <div class="page-nav">
