@@ -172,8 +172,10 @@ body {
 main {
   margin-left: var(--sidebar-w);
   flex: 1;
+  min-width: 0;
   max-width: 900px;
   padding: 48px 48px 80px;
+  overflow-x: hidden;
 }
 
 /* ── Page header ─────────────────────────────────────────────────── */
@@ -280,7 +282,9 @@ pre {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 18px;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
   color: #a5c8ff;
   line-height: 1.6;
   margin: 16px 0;
@@ -341,7 +345,7 @@ td strong { color: var(--text); }
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   flex-shrink: 0; margin-top: 1px;
 }
-.step-content { flex: 1; }
+.step-content { flex: 1; min-width: 0; }
 .step-title { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .step-body  { font-size: 12.5px; color: var(--text-muted); }
 
