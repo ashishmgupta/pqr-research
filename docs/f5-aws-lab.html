@@ -116,18 +116,20 @@
     <div class="eyebrow">Post-Quantum Readiness · Lab</div>
     <h1>F5 ML-KEM Lab on AWS</h1>
     <p class="subtitle">
-      Spin up a BIG-IP instance via AWS Marketplace, configure two VIPs side by side —
-      one with ML-KEM enabled and one without — and verify the difference with
-      <code>openssl s_client</code>. The goal is a working before/after you can run
-      commands against yourself.
+      F5 Networks added post-quantum support in TMOS 17.5.1, making BIG-IP one of the
+      first enterprise ADCs to ship ML-KEM (FIPS 203) as a configurable DH group.
+      This lab puts that support to the test. I spin up two BIG-IP instances from AWS
+      Marketplace, one running 17.1.3.1 and one on 17.5.1, and show exactly what
+      happens when you try to enable ML-KEM on each. The older version rejects the
+      config outright. The newer one negotiates <code>X25519MLKEM768</code> and you
+      can verify it with <code>openssl s_client</code>.
     </p>
   </div>
 
   <div class="callout callout-yellow">
     <strong>Version requirement:</strong> ML-KEM on F5 BIG-IP requires TMOS 17.5.1 or later.
-    Earlier versions do not support <code>X25519MLKEM768</code> as a DH group in cipher rules.
-    See <a href="#pre-17-5-1" style="color:var(--yellow);">Part 2</a> for a live demonstration
-    of the tmsh validation error on 17.1.3.1.
+    Earlier versions do not include <code>X25519MLKEM768</code> as a valid DH group.
+    See <a href="#pre-17-5-1" style="color:var(--yellow);">Part 2</a> for the live error on 17.1.3.1.
   </div>
 
   <!-- ── What this lab sets up ─────────────────────────────────────── -->
