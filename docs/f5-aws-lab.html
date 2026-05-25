@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F5 ML-KEM Lab (AWS) — Post-Quantum Readiness</title>
+  <title>F5 ML-KEM Lab (AWS) | Post-Quantum Readiness</title>
   <link rel="stylesheet" href="static/style.css" />
   <style>
     .pre-wrap { position: relative; }
@@ -141,12 +141,12 @@
 
   <div class="card-grid">
     <div class="card" style="border-color:rgba(248,81,73,0.25);">
-      <h4 style="color:var(--red);">Port 9443 — No ML-KEM</h4>
-      <p>Standard TLS 1.3 with classical ECDH key exchange. This is the baseline — what
+      <h4 style="color:var(--red);">Port 9443  -  No ML-KEM</h4>
+      <p>Standard TLS 1.3 with classical ECDH key exchange. This is the baseline  -  what
       most F5 deployments look like today without any PQC configuration.</p>
     </div>
     <div class="card" style="border-color:rgba(63,185,80,0.25);">
-      <h4 style="color:var(--green);">Port 443 — With ML-KEM</h4>
+      <h4 style="color:var(--green);">Port 443  -  With ML-KEM</h4>
       <p>TLS 1.3 with <code>X25519MLKEM768</code> DH group enabled. A compatible
       client will negotiate <code>X25519MLKEM768</code> as the key exchange group.</p>
     </div>
@@ -173,7 +173,7 @@
         </tr>
         <tr>
           <td><strong>EC2 key pair</strong></td>
-          <td>Create one in the target region before launching — you'll need it for initial SSH access</td>
+          <td>Create one in the target region before launching  -  you'll need it for initial SSH access</td>
         </tr>
         <tr>
           <td><strong>VPC with public subnet</strong></td>
@@ -208,7 +208,7 @@
         <div class="step-body">
           In the AWS Console, go to <strong>AWS Marketplace → Discover products</strong>.
           Search for <code>F5 BIG-IP Good PAYG</code>. The top match will be
-          <strong>"F5 BIG-IP Virtual Edition — GOOD (PAYG, 25Mbps)"</strong> — click it.
+          <strong>"F5 BIG-IP Virtual Edition  -  GOOD (PAYG, 25Mbps)"</strong>  -  click it.
           GOOD includes full LTM SSL offloading and cipher group support. No separate license file required.
           <img src="static/f5-bigip-setup/01_Discover%20products%20_%20AWS%20Marketplace%20_%20Global.png"
                alt="AWS Marketplace search results showing F5 BIG-IP Virtual Edition GOOD PAYG 25Mbps as top match"
@@ -227,12 +227,12 @@
                alt="F5 BIG-IP GOOD PAYG 25Mbps product page with View purchase options button"
                style="max-width:480px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px;display:block;">
           <p style="margin-top:10px;">Review the purchase details and click <strong>Subscribe</strong>.
-          This is a usage-based agreement — you are only charged while instances are running,
+          This is a usage-based agreement  -  you are only charged while instances are running,
           billed hourly at the combined EC2 + software rate.</p>
           <img src="static/f5-bigip-setup/03_AWS%20Marketplace%20_%20Global.png"
                alt="Marketplace subscribe page showing purchase details and Subscribe button"
                style="max-width:560px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
-          <p style="margin-top:10px;">The subscription activates in up to 3 minutes — do not close the page:</p>
+          <p style="margin-top:10px;">The subscription activates in up to 3 minutes  -  do not close the page:</p>
           <img src="static/f5-bigip-setup/04_AWS%20Marketplace%20_%20Global.png"
                alt="Subscription in progress message"
                style="max-width:560px;width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
@@ -251,17 +251,17 @@
         <div class="step-body">
           On the launch configuration page:
           <ul style="margin:8px 0 8px 20px;line-height:1.8;">
-            <li><strong>Version</strong> — change to <strong>17.5.1</strong>. The page defaults
+            <li><strong>Version</strong>  -  change to <strong>17.5.1</strong>. The page defaults
             to the latest stable release (21.x at time of writing) but this lab is verified
             on 17.5.1 which introduced ML-KEM support.</li>
-            <li><strong>Region</strong> — select your preferred region.</li>
-            <li><strong>Launch method</strong> — select <strong>Launch from EC2</strong> for
+            <li><strong>Region</strong>  -  select your preferred region.</li>
+            <li><strong>Launch method</strong>  -  select <strong>Launch from EC2</strong> for
             full control over instance type, networking, and security groups.</li>
           </ul>
           Click <strong>Launch from EC2</strong>.
           <div class="callout callout-yellow" style="margin-top:10px;">
             <strong>Change the version before launching.</strong> The default shown is the latest
-            (21.x). This lab's tmsh commands were verified on <strong>17.5.1</strong> — using a
+            (21.x). This lab's tmsh commands were verified on <strong>17.5.1</strong>  -  using a
             different major version may require different syntax.
           </div>
           <img src="static/f5-bigip-setup/06_AWS%20Marketplace%20_%20Global.png"
@@ -301,10 +301,10 @@
     <div class="step">
       <div class="step-num">6</div>
       <div class="step-content">
-        <div class="step-title">Network settings — public subnet</div>
+        <div class="step-title">Network settings  -  public subnet</div>
         <div class="step-body">
           Place the instance in a <strong>public subnet</strong> with auto-assign public IP
-          enabled. For this single-NIC lab one interface is sufficient — management and
+          enabled. For this single-NIC lab one interface is sufficient  -  management and
           data plane share the same NIC and IP.
         </div>
       </div>
@@ -316,12 +316,12 @@
         <div class="step-title">Security group</div>
         <div class="step-body">
           Create a new security group with these four inbound rules.
-          Use <strong>My IP</strong> as the source for all rules — this lab only
+          Use <strong>My IP</strong> as the source for all rules  -  this lab only
           needs to be reachable from your test machine:
-          <pre style="margin-top:8px;">TCP 22    — SSH (initial access)         source: My IP
-TCP 443   — VIP with ML-KEM              source: My IP
-TCP 8443  — BIG-IP management UI        source: My IP
-TCP 9443  — VIP without ML-KEM          source: My IP</pre>
+          <pre style="margin-top:8px;">TCP 22     -  SSH (initial access)         source: My IP
+TCP 443    -  VIP with ML-KEM              source: My IP
+TCP 8443   -  BIG-IP management UI        source: My IP
+TCP 9443   -  VIP without ML-KEM          source: My IP</pre>
           <div class="callout callout-yellow" style="margin-top:8px;">
             <strong>Why not port 8443 for the classical VIP?</strong>
             In a single-NIC AWS deployment, the BIG-IP management web UI binds port 8443
@@ -340,8 +340,8 @@ TCP 9443  — VIP without ML-KEM          source: My IP</pre>
       <div class="step-content">
         <div class="step-title">Key pair and launch</div>
         <div class="step-body">
-          Select your existing EC2 key pair. Review the summary panel —
-          confirm <strong>m5.xlarge</strong> is selected — then click
+          Select your existing EC2 key pair. Review the summary panel  - 
+          confirm <strong>m5.xlarge</strong> is selected  -  then click
           <strong>Launch instance</strong>.
           <img src="static/f5-bigip-setup/10_AWS%20Marketplace%20_%20Global.png"
                alt="EC2 launch summary showing m5.xlarge instance type and Launch instance button"
@@ -375,7 +375,7 @@ TCP 9443  — VIP without ML-KEM          source: My IP</pre>
           BIG-IP PAYG instances use the EC2 instance ID as the initial admin password.
           SSH in and change it immediately:
           <pre style="margin-top:8px;">ssh -i F5.pem admin@&lt;PUBLIC-IP&gt;</pre>
-          <p style="margin-top:8px;">The first connection will ask you to confirm the host fingerprint — type <code>yes</code>.
+          <p style="margin-top:8px;">The first connection will ask you to confirm the host fingerprint  -  type <code>yes</code>.
           You land directly at the tmsh prompt:</p>
           <img src="static/f5-bigip-setup/12_AWS%20Marketplace%20_%20Global.png"
                alt="First SSH login to F5 BIG-IP showing fingerprint confirmation and tmsh prompt"
@@ -405,7 +405,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
         <div class="step-body">
           Open <code>https://&lt;PUBLIC-IP&gt;:8443</code> in your browser.
           Accept the self-signed cert warning. Log in as <code>admin</code> with
-          the password you just set. The Setup Wizard will appear — you can
+          the password you just set. The Setup Wizard will appear  -  you can
           skip it for this lab.
         </div>
       </div>
@@ -428,7 +428,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
         <div class="step-title">No certificate setup needed</div>
         <div class="step-body">
           The SSL profiles inherit the built-in default self-signed cert from the
-          <code>clientssl</code> parent profile. No manual cert creation required —
+          <code>clientssl</code> parent profile. No manual cert creation required  - 
           the lab is testing key exchange groups, not certificate validation.
         </div>
       </div>
@@ -438,7 +438,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
       <div class="step-content">
         <div class="step-title">Create a backend pool</div>
         <div class="step-body">
-          Both VIPs need a pool. For this lab the backend doesn't need to be reachable —
+          Both VIPs need a pool. For this lab the backend doesn't need to be reachable  - 
           the TLS handshake (where ML-KEM is negotiated) completes before F5 attempts the
           backend connection. Use <code>192.0.2.1</code>, an RFC 5737 reserved address
           that F5 accepts but that routes nowhere:
@@ -446,7 +446,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
           <img src="static/f5-bigip-setup/14_AWS%20Marketplace%20_%20Global.png"
                alt="tmsh create ltm pool lab-pool command with no output confirming success"
                style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:8px;display:block;">
-          No monitor is set intentionally — without one F5 marks the member
+          No monitor is set intentionally  -  without one F5 marks the member
           <em>unchecked</em> and still forwards, so the VIP stays green.
         </div>
       </div>
@@ -456,7 +456,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
   <!-- ── Part 2: Pre-17.5.1 ────────────────────────────────────────── -->
   <div class="part-header" id="pre-17-5-1">
     <span class="part-badge part-2">Part 2</span>
-    <span class="part-title">F5 Before 17.5.1 — No ML-KEM Support</span>
+    <span class="part-title">F5 Before 17.5.1  -  No ML-KEM Support</span>
   </div>
 
   <p>
@@ -466,7 +466,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
     you exactly why the version matters.
   </p>
   <p>
-    Launched from the same AWS Marketplace listing — the only difference is the
+    Launched from the same AWS Marketplace listing  -  the only difference is the
     <strong>Version</strong> dropdown is set to <code>17.1.3.1-0.0.6</code> instead of 17.5.1.
   </p>
 
@@ -478,8 +478,8 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
         <div class="step-body">
           On the <strong>Launch from EC2</strong> configuration page, open the
           <strong>Version</strong> dropdown and select
-          <code>17.1.3.1-0.0.6 (Jan 22, 2026)</code>. Everything else — instance type,
-          security group, key pair — is identical to the Part 1 setup.
+          <code>17.1.3.1-0.0.6 (Jan 22, 2026)</code>. Everything else  -  instance type,
+          security group, key pair  -  is identical to the Part 1 setup.
           <img src="static/f5-bigip-setup/23_AWS%20Marketplace%20_%20Global.png"
                alt="AWS Marketplace launch page with version dropdown set to 17.1.3.1-0.0.6"
                style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
@@ -505,11 +505,11 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
-        <div class="step-title">Attempt the ML-KEM cipher rule — tmsh rejects it</div>
+        <div class="step-title">Attempt the ML-KEM cipher rule  -  tmsh rejects it</div>
         <div class="step-body">
           Run the exact same command used in Part 3 to create the ML-KEM cipher rule:
 <pre>create ltm cipher rule ml-kem-rule { cipher DEFAULT dh-groups "X25519MLKEM768:DEFAULT" signature-algorithms DEFAULT }</pre>
-          <p style="margin-top:8px;color:var(--text-muted);font-size:13px;">tmsh rejects it immediately — no object is created:</p>
+          <p style="margin-top:8px;color:var(--text-muted);font-size:13px;">tmsh rejects it immediately  -  no object is created:</p>
 <pre><span class="comment">01071d2a:3: Cipher rule (/Common/ml-kem-rule): 'X25519MLKEM768' is not a valid DH Groups.</span></pre>
           <img src="static/f5-bigip-setup/25_AWS%20Marketplace%20_%20Global.png"
                alt="tmsh error on 17.1.3.1: X25519MLKEM768 is not a valid DH Groups"
@@ -522,7 +522,7 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
   <div class="callout callout-red">
     <strong>17.1.x does not know X25519MLKEM768.</strong>
     The DH group was introduced in 17.5.1. On any earlier version the tmsh object model
-    does not include it as a valid value, so cipher rule creation fails at validation —
+    does not include it as a valid value, so cipher rule creation fails at validation  - 
     nothing is written and no VIP can be built on top of it. Upgrading to 17.5.1 or later
     is the only path to enabling post-quantum key exchange on F5 BIG-IP.
   </div>
@@ -530,11 +530,11 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
   <!-- ── Part 3 ────────────────────────────────────────────────────── -->
   <div class="part-header" id="post-17-5-1">
     <span class="part-badge part-3">Part 3</span>
-    <span class="part-title">F5 17.5.1+ — ML-KEM Configured</span>
+    <span class="part-title">F5 17.5.1+  -  ML-KEM Configured</span>
   </div>
 
   <!-- ── VIP without ML-KEM ────────────────────────────────────────── -->
-  <h3 id="vip-no-mlkem">VIP without ML-KEM (Port 9443 — Baseline)</h3>
+  <h3 id="vip-no-mlkem">VIP without ML-KEM (Port 9443  -  Baseline)</h3>
 
   <p>
     This is a standard TLS 1.3 virtual server with classical key exchange.
@@ -548,11 +548,11 @@ icacls F5.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"</pre>
         <div class="step-title">Create the classical cipher rule and group</div>
         <div class="step-body">
           The built-in <code>clientssl</code> profile has <code>no-tlsv1.3</code> in its
-          options on TMOS 17.5.1 — TLS 1.3 is disabled by default and must be explicitly
+          options on TMOS 17.5.1  -  TLS 1.3 is disabled by default and must be explicitly
           enabled. BIG-IP also requires a cipher group whenever TLS 1.3 is active.
           The classical rule uses <code>dh-groups DEFAULT</code> which includes the
           standard ECDH groups (P-256, X25519) but intentionally excludes
-          <code>X25519MLKEM768</code> — that omission is what makes this the "before" state:
+          <code>X25519MLKEM768</code>  -  that omission is what makes this the "before" state:
 <pre>create ltm cipher rule classical-rule { cipher DEFAULT dh-groups DEFAULT signature-algorithms DEFAULT }
 create ltm cipher group classical-group { allow add { classical-rule } }</pre>
           <p style="margin-top:12px;font-weight:600;font-size:13px;">Verify:</p>
@@ -578,11 +578,11 @@ ltm cipher group classical-group {
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <div class="step-title">Create the Client SSL profile — classical</div>
+        <div class="step-title">Create the Client SSL profile  -  classical</div>
         <div class="step-body">
           Override the inherited <code>no-tlsv1.3</code> option by specifying the options
           list explicitly (without it). Attach the cipher group and set
-          <code>ciphers none</code> — a profile cannot have both a ciphers string and a
+          <code>ciphers none</code>  -  a profile cannot have both a ciphers string and a
           cipher group:
 <pre>create ltm profile client-ssl lab-ssl-classical { defaults-from clientssl options { dont-insert-empty-fragments no-dtlsv1.2 } cipher-group classical-group ciphers none }</pre>
           <p style="margin-top:12px;font-weight:600;font-size:13px;">Verify:</p>
@@ -605,7 +605,7 @@ ltm cipher group classical-group {
       <div class="step-content">
         <div class="step-title">Create the virtual server on port 9443</div>
         <div class="step-body">
-          Use <code>vlans-disabled</code> (not <code>vlans-enabled</code>) — in single-NIC
+          Use <code>vlans-disabled</code> (not <code>vlans-enabled</code>)  -  in single-NIC
           mode, <code>vlans-enabled</code> without a VLAN list causes the VIP to receive
           no traffic:
 <pre>create ltm virtual lab-vip-classical { destination 0.0.0.0:9443 ip-protocol tcp pool lab-pool profiles add { lab-ssl-classical { context clientside } tcp { } } source-address-translation { type automap } vlans-disabled }</pre>
@@ -637,7 +637,7 @@ ltm cipher group classical-group {
   <p>
     This virtual server uses a Client SSL profile backed by a custom cipher group
     that includes <code>X25519MLKEM768</code> as a preferred DH group. ML-KEM
-    only negotiates over TLS 1.3 via the <code>key_share</code> extension — the
+    only negotiates over TLS 1.3 via the <code>key_share</code> extension  -  the
     classical fallback remains available for clients that don't support it.
   </p>
 
@@ -651,7 +651,7 @@ ltm cipher group classical-group {
           <code>X25519MLKEM768:DEFAULT</code> advertises the hybrid ML-KEM group first,
           with all standard groups as fallback. The <code>cipher</code> and
           <code>signature-algorithms</code> properties use <code>DEFAULT</code> to
-          inherit the platform defaults — no custom cipher strings needed:
+          inherit the platform defaults  -  no custom cipher strings needed:
 <pre>create ltm cipher rule ml-kem-rule { cipher DEFAULT dh-groups "X25519MLKEM768:DEFAULT" signature-algorithms DEFAULT }
 create ltm cipher group ml-kem-group { allow add { ml-kem-rule } }</pre>
           <p style="margin-top:12px;font-weight:600;font-size:13px;">Verify:</p>
@@ -677,9 +677,9 @@ ltm cipher group ml-kem-group {
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <div class="step-title">Create the Client SSL profile — with ML-KEM</div>
+        <div class="step-title">Create the Client SSL profile  -  with ML-KEM</div>
         <div class="step-body">
-          Same options override as the classical profile — must remove the inherited
+          Same options override as the classical profile  -  must remove the inherited
           <code>no-tlsv1.3</code> so TLS 1.3 is active. Attach the ML-KEM cipher group
           and set <code>ciphers none</code>:
 <pre>create ltm profile client-ssl lab-ssl-mlkem { defaults-from clientssl options { dont-insert-empty-fragments no-dtlsv1.2 } cipher-group ml-kem-group ciphers none }</pre>
@@ -735,8 +735,8 @@ ltm cipher group ml-kem-group {
 
   <div class="callout callout-yellow">
     <strong>OpenSSL 3.5+ required.</strong> The system <code>openssl</code> on most Linux distros is
-    3.0.x and does not support ML-KEM. Use the custom-built binary — referenced here as
-    <code>openssl35</code> — from the <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL Setup</a> guide.
+    3.0.x and does not support ML-KEM. Use the custom-built binary  -  referenced here as
+    <code>openssl35</code>  -  from the <a href="network.html#openssl-setup" style="color:var(--blue);">OpenSSL Setup</a> guide.
   </div>
 
   <div class="callout callout-yellow" style="margin-bottom:16px;">
@@ -747,10 +747,10 @@ ltm cipher group ml-kem-group {
     output is flushed on exit.
   </div>
 
-  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 9443 — classical (no ML-KEM)</h4>
+  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 9443  -  classical (no ML-KEM)</h4>
   <pre>openssl35 s_client -connect &lt;PUBLIC-IP&gt;:9443 -tls1_3 -groups X25519MLKEM768:X25519:P-256 &lt;/dev/null 2>&amp;1 | grep -E "Protocol|Temp Key|group|Cipher is"</pre>
 
-  <p>Expected output — TLS 1.3 negotiated, server selected a classical ECDH group (P-256).
+  <p>Expected output  -  TLS 1.3 negotiated, server selected a classical ECDH group (P-256).
   The client offered ML-KEM but the server's cipher rule has no PQC DH group, so it
   fell back to classical:</p>
   <pre><span class="comment">Peer Temp Key: ECDH, prime256v1, 256 bits</span>
@@ -760,10 +760,10 @@ Protocol: TLSv1.3</pre>
        alt="openssl35 s_client test against port 9443 showing Peer Temp Key ECDH prime256v1 and TLSv1.3"
        style="max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:10px;display:block;">
 
-  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 443 — with ML-KEM</h4>
+  <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:24px 0 8px;">Test port 443  -  with ML-KEM</h4>
   <pre>openssl35 s_client -connect &lt;PUBLIC-IP&gt;:443 -tls1_3 -groups X25519MLKEM768:X25519:P-256 &lt;/dev/null 2>&amp;1 | grep -E "Protocol|Temp Key|group|Cipher is"</pre>
 
-  <p>Expected output — both sides support ML-KEM, so it is negotiated:</p>
+  <p>Expected output  -  both sides support ML-KEM, so it is negotiated:</p>
   <pre><span class="highlight">Negotiated TLS1.3 group: X25519MLKEM768</span>
 <span class="highlight">New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256</span>
 Protocol: TLSv1.3</pre>
@@ -775,7 +775,7 @@ Protocol: TLSv1.3</pre>
     <strong>The one line that tells the whole story:</strong>
     <code>Negotiated TLS1.3 group: X25519MLKEM768</code> on port 443 vs
     <code>Peer Temp Key: ECDH, prime256v1</code> on port 9443. Same client, same server IP,
-    same TLS version and cipher suite — the only difference is whether the Client SSL
+    same TLS version and cipher suite  -  the only difference is whether the Client SSL
     profile's cipher rule includes <code>X25519MLKEM768</code> in its
     <code>dh-groups</code>. That single property is the entire configuration delta between
     a classically vulnerable TLS session and a post-quantum protected one.
@@ -784,7 +784,7 @@ Protocol: TLSv1.3</pre>
   <h3 id="cleanup">Teardown</h3>
   <p>
     The instance costs money while running. When you're done testing, terminate it from the
-    EC2 console. There is no persistent storage to worry about — all BIG-IP configuration
+    EC2 console. There is no persistent storage to worry about  -  all BIG-IP configuration
     lives on the instance root volume which is deleted on termination.
   </p>
   <pre># Confirm both VIPs are tested, then terminate via AWS Console:

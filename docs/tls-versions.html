@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TLS 1.2 vs TLS 1.3 — Post-Quantum Readiness</title>
+  <title>TLS 1.2 vs TLS 1.3 | Post-Quantum Readiness</title>
   <link rel="stylesheet" href="static/style.css" />
   <style>
     .comparison-grid {
@@ -246,7 +246,7 @@
          font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
 
       <!-- TLS 1.2 side -->
-      <text x="200" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#f85149">TLS 1.2 — Key Exchange</text>
+      <text x="200" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#f85149">TLS 1.2  -  Key Exchange</text>
 
       <rect x="20"  y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
       <text x="60"  y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
@@ -269,7 +269,7 @@
 
       <!-- Step 3: Both derive session key -->
       <text x="200" y="138" text-anchor="middle" font-size="9" fill="#8b949e">Both derive session key from secret</text>
-      <text x="200" y="154" text-anchor="middle" font-size="9" fill="#f85149">⚠ Secret was on the wire — capturable</text>
+      <text x="200" y="154" text-anchor="middle" font-size="9" fill="#f85149">⚠ Secret was on the wire  -  capturable</text>
       <rect x="80" y="165" width="240" height="20" rx="4" fill="rgba(248,81,73,0.08)" stroke="rgba(248,81,73,0.3)" stroke-width="1"/>
       <text x="200" y="179" text-anchor="middle" font-size="9" fill="#f85149" font-weight="700">Harvest now → decrypt later if cert key ever broken</text>
 
@@ -277,7 +277,7 @@
       <line x1="410" y1="30" x2="410" y2="210" stroke="#21262d" stroke-width="1.5" stroke-dasharray="4,4"/>
 
       <!-- TLS 1.3 side -->
-      <text x="615" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#3fb950">TLS 1.3 — Key Exchange</text>
+      <text x="615" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#3fb950">TLS 1.3  -  Key Exchange</text>
 
       <rect x="430" y="38" width="80" height="32" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
       <text x="470" y="58" text-anchor="middle" font-size="11" fill="#e6edf3" font-weight="600">Browser</text>
@@ -296,7 +296,7 @@
       <text x="610" y="138" text-anchor="middle" font-size="9" fill="#8b949e">Each side computes shared secret independently</text>
       <text x="610" y="154" text-anchor="middle" font-size="9" fill="#3fb950">✓ Secret never transmitted</text>
       <rect x="455" y="165" width="310" height="20" rx="4" fill="rgba(63,185,80,0.08)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
-      <text x="610" y="179" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">Ephemeral keys discarded — no reuse, no retroactive decryption</text>
+      <text x="610" y="179" text-anchor="middle" font-size="9" fill="#3fb950" font-weight="700">Ephemeral keys discarded  -  no reuse, no retroactive decryption</text>
     </svg>
   </div>
 
