@@ -60,6 +60,7 @@
         <a href="#tls-legs" class="nav-sub">TLS Termination Points</a>
         <a href="#vendor-status" class="nav-sub">Vendor PQC Status</a>
         <a href="#f5-config" class="nav-sub">F5 Configuration</a>
+        <a href="#online-check" class="nav-sub">Online Check</a>
         <a href="#openssl-setup" class="nav-sub">OpenSSL Setup</a>
         <a href="#verify" class="nav-sub">Running the Test</a>
 
@@ -206,6 +207,86 @@
   options { no-tlsv1 \
   no-tlsv1-1 }</pre>
     </div>
+  </div>
+
+  <!-- ── Online Check ─────────────────────────────────────────────── -->
+  <h3 id="online-check">Check Without Installing Anything</h3>
+  <p>
+    You do not need a custom OpenSSL build to test a public-facing server. Two options
+    work without any setup at all.
+  </p>
+
+  <h4 style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px;">Option 1 - Your browser (the most realistic test)</h4>
+  <p>
+    Chrome 124+, Edge 124+, and Firefox 132+ already advertise <code>X25519MLKEM768</code>
+    in the TLS client hello by default. Visit a site and if the server supports ML-KEM,
+    the browser negotiates it automatically. You can see exactly what was negotiated in
+    the browser's own security panel, which is the closest thing to a real user session.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Browser</th><th>Steps</th><th>What to look for</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Chrome / Edge</strong></td>
+          <td>F12 > Security tab > Connection section</td>
+          <td><code>Key Exchange: X25519MLKEM768</code></td>
+        </tr>
+        <tr>
+          <td><strong>Firefox</strong></td>
+          <td>Click padlock > More Information > Security tab</td>
+          <td><code>Key Exchange: X25519MLKEM768</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size:13px;color:var(--text-muted);">
+    If the Key Exchange field shows <code>X25519</code> or <code>P-256</code>, the server
+    is TLS 1.3 but classical only. Same connection, different algorithm in the key_share slot.
+  </p>
+
+  <h4 style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px;">Option 2 - SSL Labs (Qualys)</h4>
+  <p>
+    SSL Labs has been the industry standard for TLS server analysis for years. It runs a
+    full handshake from Qualys infrastructure and reports what cipher suites, groups, and
+    protocol versions the server actually supports, not just what it claims to.
+  </p>
+
+  <div class="step-list" style="margin-top:12px;">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-body">Go to <a href="https://www.ssllabs.com/ssltest/" target="_blank" style="color:var(--blue);">ssllabs.com/ssltest</a> and enter the hostname. Leave "Do not show the results on the boards" checked if you prefer privacy.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-body">Wait 2-3 minutes for the full scan to complete.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-body">
+          Scroll to the <strong>Configuration</strong> section. Under <strong>Groups</strong>,
+          check whether <code>X25519MLKEM768</code> appears in the supported list.
+          If it does, the server will negotiate ML-KEM with a capable client.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>Public endpoints only.</strong> Both the browser check and SSL Labs only
+    work for servers reachable from the internet. For internal load balancers, private
+    APIs, or anything behind a firewall, you need <code>openssl s_client</code> from
+    a machine that can reach the endpoint directly. That is what the next two sections
+    cover.
   </div>
 
   <!-- ── OpenSSL Setup ─────────────────────────────────────────────── -->
